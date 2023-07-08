@@ -1,0 +1,35 @@
+class Enemigos(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        image_path = "imagenes/marciano.gif"
+        gif = Image.open(image_path)
+        resized_gif = gif.resize((120, 120))
+        resized_gif.save("nuevonave.gif")
+
+        self.image = pygame.image.load("nuevonave.gif").convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(1, width - 100)
+        self.rect.y = 20
+        self.velocidad_y = random.randrange(0, 20)
+        self.tiempo_disparo = pygame.time.get_ticks()
+
+    def update(self):
+        self.time = random.randrange(-1, pygame.time.get_ticks() // 5000)
+        self.rect.x += self.time
+        if self.rect.x >= width:
+            self.rect.x = 0
+            self.rect.y += 150
+
+        tiempo_actual = pygame.time.get_ticks()
+        tiempo_transcurrido = tiempo_actual - self.tiempo_disparo
+        intervalo_disparo = 4000
+
+        if tiempo_transcurrido >= intervalo_disparo:
+            self.disparar_enemigos()
+            self.tiempo_disparo = tiempo_actual
+
+    def disparar_enemigos(self):
+        bala = Balas_enemigos(self.rect.centerx, self.rect.bottom)
+        grupo_jugador.add(bala)
+        grupo_balas_enemigos.add(bala)
+        laser_sonido.play()
