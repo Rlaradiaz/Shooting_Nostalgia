@@ -1,6 +1,5 @@
 import pygame
 import random
-from PIL import Image
 import sys
 
 # image resized
@@ -603,7 +602,7 @@ while run:
     colision2 = pygame.sprite.spritecollide(player, grupo_balas_enemigos, True)
     for j in colision2:
         player.vida -= 10
-        if player.vida <= 0:
+        if player.vida <= 0 or player not in grupo_jugador.sprites():
             run = False
         explo1 = Explosion(j.rect.center)
         grupo_jugador.add(explo1)
@@ -612,7 +611,7 @@ while run:
     hits = pygame.sprite.spritecollide(player, grupo_enemigos, False)
     for hit in hits:  
         player.vida -= 100
-        if player.vida <= 0:
+        if player.vida <= 0  or player not in grupo_jugador.sprites():
            run = False
         golpe_sonido.play()
         #enemigos = Enemigos(1, 1)
@@ -622,7 +621,7 @@ while run:
     hits = pygame.sprite.spritecollide(player, grupo_enemigos2, False)
     for hit in hits:  
         player.vida -= 100    
-        if player.vida <= 0:
+        if player.vida <= 0 or player not in grupo_jugador.sprites():
             run = False
 
         explo1 = Explosion(j.rect.center)
@@ -635,7 +634,7 @@ while run:
 
     barra_vida(screen, width - 285, 0, player.vida)
 
-    if player.vida <= 0:
+    if player.vida <= 0 or player not in grupo_jugador.sprites():
         run = False
         show_game_over_screen()
 
