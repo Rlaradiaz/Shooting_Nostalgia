@@ -1,66 +1,52 @@
-# game.spec
 
-# -*- mode: python ; coding: utf-8 -*-
+swith para modificar el producto
 
-block_cipher = None
+   
 
-a = Analysis(['game.py'],
-             pathex=['C:\\Users\\RODRIGO\\Desktop\\Space_invaders'],
-             binaries=[],
-             datas=[
-                 ('imagenes', 'imagenes'),  # Incluir el directorio 'imagenes' y su contenido
-                 ('explosion', 'explosion'),
-                 ('marciano', 'marciano'),
-                 ('helicoptero', 'helicoptero'),
-                 ('helicoptero1', 'helicoptero1'),
-                 ('Resized_Nave.png', '.'),
-                 ('Resized_Meteoro.png', '.'),
-                 ('explosion/1.png', 'explosion'),
-                 ('explosion/2.png', 'explosion'),
-                 ('explosion/3.png', 'explosion'),
-                 ('explosion/4.png', 'explosion'),
-                 ('explosion/5.png', 'explosion'),
-                 ('explosion/6.png', 'explosion'),
-                 ('explosion/7.png', 'explosion'),
-                 ('explosion/8.png', 'explosion'),
-                 ('explosion/9.png', 'explosion'),
-                 ('explosion/10.png', 'explosion'),
-                 ('explosion/11.png', 'explosion'),
-                 ('explosion/12.png', 'explosion'),
-                 ('laser.wav', '.'),
-                 ('explosion.wav', '.'),
-                 ('-miau-.mp3', '.'),
-                 ('imagenes/juego1.jpg', 'imagenes'),
-                 ('imagenes/juego2.jpg', 'imagenes'),
-                 ('imagenes/juego3.jpg', 'imagenes'),
-                 ('imagenes/juego4.jpg', 'imagenes'),
-                 ('imagenes/cat.jpeg', 'imagenes'),
-                 ('imagenes/Mega.mp3', '.'),
-             ],
-             hiddenimports=[],
-             hookspath=[],
-             runtime_hooks=[],
-             excludes=[],
-             win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher,
-             noarchive=False)
+public void modificarProducto(String nombreProducto) {
+        for (Producto producto : listaProductos) {
+            if (producto.getNombre().equalsIgnoreCase(nombreProducto)) {
+                Scanner scanner = new Scanner(System.in);
 
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+                System.out.println("Seleccione la característica que desea modificar:");
+                System.out.println("1. Nombre");
+                System.out.println("2. Categoría");
+                System.out.println("3. Precio");
+                System.out.println("4. Cantidad en inventario");
+                System.out.print("Ingrese la opción deseada: ");
+                int opcion = scanner.nextInt();
+                
 
-exe = EXE(pyz,
-          a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
-          [],
-          name='game',
-          debug=False,
-          bootloader_ignore_signals=False,
-          strip=False,
-          upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
-          console=True )  # Si tu juego es una aplicación de consola, usa True. Si es una aplicación de ventana, usa False.
+                switch (opcion) {
+                    case 1:
+                        System.out.println("Ingrese el nuevo nombre del producto: ");
+                        String nuevoNombre = scanner.nextLine();
+                        producto.setNombre(nuevoNombre);
+                        break;
+                    case 2:
+                        System.out.println("Ingrese la nueva categoría del producto: ");
+                        String nuevaCategoria = scanner.nextLine();
+                        producto.setCategoria(nuevaCategoria);
+                        break;
+                    case 3:
+                        System.out.println("Ingrese el nuevo precio del producto: ");
+                        double nuevoPrecio = scanner.nextDouble();
+                        producto.setPrecio(nuevoPrecio);
+                        break;
+                    case 4:
+                        System.out.println("Ingrese la nueva cantidad en inventario: ");
+                        int nuevaCantidad = scanner.nextInt();
+                        producto.setCantidad(nuevaCantidad);
+                        break;
+                    default:
+                        System.out.println("Opción inválida. No se realizaron modificaciones.");
+                        return;
+                }
+
+                System.out.println("El producto ha sido modificado exitosamente.");
+                return;
+            }
+        }
+        System.out.println("El producto no se encuentra en el inventario.");
+    }
 

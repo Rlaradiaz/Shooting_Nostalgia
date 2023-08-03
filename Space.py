@@ -1,8 +1,23 @@
+# Shooting Nostalgia
+# Autor: Rodrigo Lara
+
+
+
 import pygame
 import random
 import sys
+from PIL import Image
+import os
+
 
 # image resized
+
+Bossx = Image.open("bossxx.png")
+new_width = 300
+new_heigt = 300
+resized_image=Bossx.resize((new_width,new_heigt))
+resized_image.save("boosx.png")
+
 
 
 # Init
@@ -89,8 +104,15 @@ for i in range(1, 9):
 helicopter1_list = []
 for i in range(1, 9):
     helicopter1 = pygame.image.load(f"helicoptero1/{i}.png")
-    helicopter1_list.append(helicopter1)            
+    helicopter1_list.append(helicopter1)   
 
+Boss_list = []
+for i in range(1, 7):
+    image_path = os.path.join("Boss", f"{i}.png")
+    Bossx = pygame.image.load(image_path)
+    # Redimensionar la imagen a 300x300
+    Bossx = pygame.transform.scale(Bossx, (500, 500))
+    Boss_list.append(Bossx)
 # Background config
 
 width = fondo1.get_width()
@@ -102,7 +124,7 @@ fps = 60
 clock = pygame.time.Clock()
 score = 0
 vida = 100
-blanco = (255, 255, 255)
+blanco = (255, 255, 255)  
 negro = (0, 0, 0)
 
 
@@ -134,6 +156,35 @@ def texto_puntuacion(frame, text, size, x, y):
     text_rect = text_frame.get_rect()
     text_rect.midtop = (x, y)
     frame.blit(text_frame, text_rect)
+
+
+# Add this variable to track if the game is paused
+game_paused = False
+
+# Function to handle the pause screen
+def pause_game():
+    global game_paused
+    paused_text = pygame.font.SysFont("Arial", 50).render("Paused", True, (255, 255, 255))
+    resume_text = pygame.font.SysFont("Arial", 30).render("Press 'R' to Resume", True, (255, 255, 255))
+    quit_text = pygame.font.SysFont("Arial", 30).render("Press 'Q' to Quit", True, (255, 255, 255))
+    while game_paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    game_paused = False
+                elif event.key == pygame.K_q:
+                    pygame.quit()
+                    sys.exit()
+        
+        # Display the pause screen
+        screen.blit(paused_text, (width // 2 - paused_text.get_width() // 2, height // 2 - paused_text.get_height() // 2))
+        screen.blit(resume_text, (width // 2 - resume_text.get_width() // 2, height // 2))
+        screen.blit(quit_text, (width // 2 - quit_text.get_width() // 2, height // 2 + 40))
+        pygame.display.flip()
+        clock.tick(fps)    
 
 
 # Life Bar
@@ -204,23 +255,44 @@ class Jugador(pygame.sprite.Sprite):
 
 
     def disparar(self):
-        bala_arriba = Balas(self.rect.centerx, self.rect.top, 0, -15, "arriba")
+        if score >= 1200:
+            # Disparar hacia arriba
+            bala_arriba = Balas(self.rect.centerx, self.rect.top, 0, -15, "arriba")
+            grupo_jugador.add(bala_arriba)
+            grupo_balas_jugador.add(bala_arriba)
 
-        if score >= 200:
+            # Disparar hacia abajo
             bala_abajo = Balas(self.rect.centerx, self.rect.bottom, 0, 15, "abajo")
-            bala_derecha = Balas(self.rect.right, self.rect.centery, 15, 0, "derecha")
-            bala_izquierda = Balas(self.rect.left, self.rect.centery, -15, 0, "izquierda")
-            
             grupo_jugador.add(bala_abajo)
-            grupo_jugador.add(bala_derecha)
-            grupo_jugador.add(bala_izquierda)
-            
             grupo_balas_jugador.add(bala_abajo)
-            grupo_balas_jugador.add(bala_derecha)
-            grupo_balas_jugador.add(bala_izquierda)
 
-        grupo_jugador.add(bala_arriba)
-        grupo_balas_jugador.add(bala_arriba)
+            # Disparar hacia la derecha
+            bala_derecha = Balas(self.rect.right, self.rect.centery, 15, 0, "derecha")
+            grupo_jugador.add(bala_derecha)
+            grupo_balas_jugador.add(bala_derecha)
+
+            # Disparar hacia la izquierda
+            bala_izquierda = Balas(self.rect.left, self.rect.centery, -15, 0, "izquierda")
+            grupo_jugador.add(bala_izquierda)
+            grupo_balas_jugador.add(bala_izquierda)
+        elif score >= 600:  # Solo disparar hacia arriba si el puntaje está entre 600 y 1199
+            bala_arriba = Balas(self.rect.centerx, self.rect.top, 0, -15, "arriba")
+            grupo_jugador.add(bala_arriba)
+            grupo_balas_jugador.add(bala_arriba)
+
+            # No permitir disparar en otras direcciones
+        elif score >= 200:  # Disparar hacia la izquierda y hacia la derecha si el puntaje está entre 200 y 599
+            bala_derecha = Balas(self.rect.right, self.rect.centery, 15, 0, "derecha")
+            grupo_jugador.add(bala_derecha)
+            grupo_balas_jugador.add(bala_derecha)
+
+            bala_izquierda = Balas(self.rect.left, self.rect.centery, -15, 0, "izquierda")
+            grupo_jugador.add(bala_izquierda)
+            grupo_balas_jugador.add(bala_izquierda)
+        else:  # Disparar hacia arriba si el puntaje es menor a 200
+            bala_arriba = Balas(self.rect.centerx, self.rect.top, 0, -15, "arriba")
+            grupo_jugador.add(bala_arriba)
+            grupo_balas_jugador.add(bala_arriba)
 
 
 
@@ -451,17 +523,101 @@ class Explosion(pygame.sprite.Sprite):
                 self.rect.center = position
 
 
+
+# Class Boss
+Boss_list = []  # Definir la lista de imágenes fuera de la clase
+
+class Boss(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        # Cargar las imágenes del jefe en la lista Boss_list
+        for i in range(1, 7):
+            image_path = os.path.join("Boss", f"{i}.png")
+            Bossx = pygame.image.load(image_path).convert_alpha()
+            Boss_list.append(pygame.transform.scale(Bossx, (500, 500)))
+
+        self.image_index = 0
+        self.image = Boss_list[self.image_index]
+        self.rect = self.image.get_rect()
+        self.rect.right = width  # Colocar el jefe en el lado derecho de la pantalla
+        self.rect.bottom = height  # Colocar el jefe en la parte inferior de la pantalla
+        self.health = 1500  # Boss's health points
+        self.velocidad_x = 2  # Velocidad horizontal
+        self.velocidad_y = 1  # Velocidad vertical inicial
+        self.direction_x = -1  # Dirección horizontal inicial del movimiento (1 = hacia la derecha, -1 = hacia la izquierda)
+        self.direction_y = -1  # Dirección vertical inicial del movimiento (-1 = hacia arriba, 1 = hacia abajo)
+        self.intervalo_cambio_imagen = 100  # Ajustar la velocidad de la animación según sea necesario
+
+        self.tiempo_cambio_imagen = pygame.time.get_ticks()
+
+    def update(self):
+        # Mover el jefe horizontalmente según su dirección actual
+        self.rect.x += self.velocidad_x * self.direction_x
+
+        # Cambiar la dirección horizontal si toca los límites de la pantalla
+        if self.rect.left <= 0 and self.direction_x == -1:
+            self.direction_x = 1
+        if self.rect.right >= width and self.direction_x == 1:
+            self.direction_x = -1
+
+        # Mover el jefe verticalmente según su dirección actual
+        self.rect.y += self.velocidad_y * self.direction_y
+
+        # Cambiar la dirección vertical si toca los límites de la pantalla
+        if self.rect.top <= 0 and self.direction_y == -1:
+            self.direction_y = 1
+        if self.rect.bottom >= height and self.direction_y == 1:
+            self.direction_y = -1
+
+        # Controlar el cambio de imagen a una velocidad más lenta
+        tiempo_actual = pygame.time.get_ticks()
+        if tiempo_actual - self.tiempo_cambio_imagen >= self.intervalo_cambio_imagen:
+            self.image_index = (self.image_index + 1) % len(Boss_list)
+            self.image = Boss_list[self.image_index]
+            self.tiempo_cambio_imagen = tiempo_actual
+
+        self.draw_health_bar(screen)
+
+
+    def hit(self, damage):
+        # Reduce the boss's health by the specified damage
+        self.health -= damage
+        if self.health <= 0:
+            self.kill()  # Remove the boss if its health reaches zero
+            grupo_enemigos.remove(self)  # Remove the boss from the enemy group
+            grupo_jugador.remove(self) 
+
+    def draw_health_bar(self, surface):
+    # Draw the boss's health bar on the screen
+        bar_width = 200
+        bar_height = 20
+        fill = int((self.health / 500) * bar_width)
+        fill = min(bar_width, max(0, fill))  # Ensure fill is within the valid range
+    
+    # Use the boss's rect to determine the position of the health bar
+        bar_x = self.rect.centerx - bar_width // 2
+        bar_y = self.rect.top - 30
+    
+        border = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
+        fill = pygame.Rect(bar_x, bar_y, fill, bar_height)
+        pygame.draw.rect(surface, (255, 0, 0), fill)
+        pygame.draw.rect(surface, (255, 255, 255), border, 2)
+        
+
+
 #------------------------------------------------------------------------------------
             
 
 
-"Groups"
+#"Groups"
+
 grupo_jugador = pygame.sprite.Group()
 grupo_enemigos = pygame.sprite.Group()
 grupo_balas_ = pygame.sprite.Group()
 grupo_balas_jugador = pygame.sprite.Group()
 grupo_balas_enemigos = pygame.sprite.Group()
 grupo_enemigos2 = pygame.sprite.Group()
+grupo_boss = pygame.sprite.Group() 
 
 
 # Player
@@ -475,11 +631,6 @@ for x in range(5):
     grupo_jugador.add(enemigo )
 
 
-#Boss----------------------------------------------------------------------------------
-
-#Elimine que el Boss saliese al comienzo
-
- #-------------------------------------------------------------------------------------   
 
 current_background = fondo1
 
@@ -488,6 +639,8 @@ INTERVALO_CREACION_ENEMIGOS = 1000
 
 MAX_ENEMIGOS_EN_PANTALLA = 7
 
+boss_spawned = False
+boss = None
 
 
 # Main Buckle
@@ -500,11 +653,15 @@ while run:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.disparar()
+            elif event.key == pygame.K_RETURN:  # Check for the 'Enter' key to pause/unpause the game
+                game_paused = not game_paused
         if transicion_alpha > 0:
             transicion_alpha -= 3 
     # Mueve los fondos hacia abajo
 
-    
+    if game_paused:
+        pause_game()
+        continue
     fondo1_y += background_speed
     fondo2_y += background_speed
     fondo3_y += background_speed
@@ -538,6 +695,8 @@ while run:
     grupo_enemigos2.update()
     grupo_balas_jugador.update()
     grupo_balas_enemigos.update()
+    grupo_boss.update()
+    
    
     
     grupo_jugador.draw(screen)
@@ -549,6 +708,31 @@ while run:
         grupo_jugador.add(enemigo)
         
         tiempo_ultimo_enemigo = tiempo_actual
+
+    if score >= 2100 and not boss_spawned:
+        # Si el score llega a 500 y el boss aún no ha aparecido, crea el boss y agrégalo a los grupos
+        boss = Boss()
+        grupo_boss.add(boss)
+        grupo_jugador.add(boss)
+        boss_spawned = True     
+
+    if boss_spawned and boss in grupo_boss.sprites():
+        boss.update()
+        boss.draw_health_bar(screen)
+
+        colision3 = pygame.sprite.spritecollide(boss, grupo_balas_jugador, True)
+        for bullet in colision3:
+            boss.hit(20)  # Each bullet from the boss reduces the boss's health by 20
+            explo2 = Explosion(bullet.rect.center)  # Create an explosion at the bullet's position
+            grupo_jugador.add(explo2)
+
+        # If the boss's health reaches zero, remove it from the sprite groups
+        if boss.health <= 0:
+            
+            grupo_boss.remove(boss)
+            grupo_jugador.remove(boss)
+            
+            boss = None
 
     colision1 = pygame.sprite.groupcollide(grupo_enemigos, grupo_balas_jugador, True, True)
     for i in colision1:
@@ -575,7 +759,6 @@ while run:
 
 
         if score >= 2000:
-           player.vida += 50
            score_reached_2000 = True        
 
        
@@ -585,6 +768,8 @@ while run:
                 enemigo = Enemigos(1,1)
                 grupo_enemigos.add(enemigo)
                 grupo_jugador.add(enemigo)
+
+   
 
 #------------------------------------------------------------------
         # Si el score suma 200 da vida.
@@ -607,6 +792,7 @@ while run:
         explo1 = Explosion(j.rect.center)
         grupo_jugador.add(explo1)
         golpe_sonido.play()
+
 
     hits = pygame.sprite.spritecollide(player, grupo_enemigos, False)
     for hit in hits:  
@@ -640,5 +826,3 @@ while run:
 
     pygame.display.flip()
 
-# Cerrar la ventana y finalizar el juego
-pygame.quit()
