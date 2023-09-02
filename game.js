@@ -21,27 +21,26 @@ let musicaFondo; // Declarar la variable para la música de fondo
 function preload() {
   // Cargar imágenes
   for (let i = 1; i <= 15; i++) {
-    marcianoImages.push(loadImage(`marciano/${i}.png`));
+    marcianoImages.push(loadImage(`Shooting_Nostalgia/marciano/${i}.png`));
   }
   for (let i = 1; i <= 8; i++) {
-    helicopterImages.push(loadImage(`helicoptero/${i}.png`));
-    helicopter1Images.push(loadImage(`helicoptero1/${i}.png`));
+    helicopterImages.push(loadImage(`Shooting_Nostalgia/helicoptero/${i}.png`));
+    helicopter1Images.push(loadImage(`Shooting_Nostalgia/helicoptero1/${i}.png`));
   }
   for (let i = 1; i <= 7; i++) {
-    bossImages.push(loadImage(`Boss/${i}.png`));
+    bossImages.push(loadImage(`Shooting_Nostalgia/Boss/${i}.png`));
   }
   for (let i = 1; i <= 12; i++) {
-    explosionImages.push(loadImage(`explosion/${i}.png`));
+    explosionImages.push(loadImage(`Shooting_Nostalgia/explosion/${i}.png`));
   }
   for (let i = 1; i <= 4; i++) {
-    fondoImages.push(loadImage(`imagenes/juego${i}.jpg`));
+    fondoImages.push(loadImage(`Shooting_Nostalgia/imagenes/juego${i}.jpg`));
   }
 
   // Cargar sonidos
-  sonidoDisparo = loadSound('sounds/laser.wav');
-  sonidoExplosion = loadSound('sounds/explosion.wav');
-  musicaFondo = loadSound('mega.mp3');
-
+  sonidoDisparo = loadSound('Shooting_Nostalgia/sounds/laser.wav');
+  sonidoExplosion = loadSound('Shooting_Nostalgia/sounds/explosion.wav');
+  musicaFondo = loadSound('Shooting_Nostalgia/mega.mp3');
 }
 
 function setup() {
@@ -168,7 +167,7 @@ function gameOver() {
 
 class Jugador {
   constructor(x, y) {
-    this.imagen = loadImage("Resized_Nave.png");
+    this.imagen = loadImage("Shooting_Nostalgia/Resized_Nave.png");
     this.ancho = 100;
     this.alto = 100;
     this.x = x;
