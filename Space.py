@@ -84,12 +84,12 @@ golpe_sonido = pygame.mixer.Sound("-miau-.mp3")
 
 
 
-# explosion animation
+# explosion animation    
 explosion_list = []
 for i in range(1, 13):
     explosion = pygame.image.load(f"explosion/{i}.png")
     explosion_list.append(explosion)
-
+    
 marciano_list = []
 for i in range(1, 16):
     marciano = pygame.image.load(f"marciano/{i}.png")
