@@ -7,7 +7,7 @@ let helicopter1Images = [];
 let bossImages = [];
 let explosionImages = [];
 let fondoImages = [];
-let fondoY = [0, -600, -1200, -1800];
+let fondoY = 0;
 let fondoSpeed = 1;
 let puntaje = 0;
 let vida = 100;
@@ -15,8 +15,17 @@ let sonidoDisparo;
 let sonidoExplosion;
 let juegoEnPausa = false;
 let tiempoUltimoEnemigo = 0;
-let tiempoGenerarEnemigo = 1000; // Intervalo de tiempo para generar enemigos en milisegundos
-let musicaFondo; // Declarar la variable para la música de fondo
+let tiempoGenerarEnemigo = 2000;
+let musicaFondo;
+let imagenBienvenida;
+let pantallaBienvenida = true;
+
+let fondoActual = 0;
+let fondoSiguiente = 1;
+let transicion = 0;
+
+// Nueva lista para enemigos que deben eliminarse
+let enemigosPorEliminar = [];
 
 function preload() {
   // Cargar imágenes
@@ -41,88 +50,111 @@ function preload() {
   sonidoDisparo = loadSound('sounds/laser.wav');
   sonidoExplosion = loadSound('sounds/explosion.wav');
   musicaFondo = loadSound('mega.mp3');
-
+  imagenBienvenida = loadImage('imagenes/cat.jpeg');
 }
 
 function setup() {
-  // Crear el lienzo y ubicarlo en el centro
-  let canvasWidth = fondoImages[0].width;
-  let canvasHeight = fondoImages[0].height;
-  let canvas = createCanvas(canvasWidth, canvasHeight);
-  let canvasX = (windowWidth - canvasWidth) / 2;
-  let canvasY = (windowHeight - canvasHeight) / 2;
-  canvas.position(canvasX, canvasY);
+  createCanvas(windowWidth, windowHeight);
+  jugador = new Jugador(width / 2, height - 50);
+  musicaFondo.loop();
+  pantallaBienvenida = true;
+}
 
-  // Crear el jugador centrado horizontalmente
-  jugador = new Jugador(canvasWidth / 2, canvasHeight - 50);
-  musicaFondo.loop(); // Iniciar la música de fondo
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
-  // Actualizar y mostrar el fondo
-  for (let i = 0; i < fondoImages.length; i++) {
-    image(fondoImages[i], 0, fondoY[i]);
-    fondoY[i] += fondoSpeed;
-    if (fondoY[i] > height) {
-      fondoY[i] = -fondoImages[i].height;
+  if (pantallaBienvenida) {
+    // Muestra la imagen de bienvenida
+    image(imagenBienvenida, 0, 0, width, height);
+
+    // Agrega un mensaje o cualquier otro elemento que desees
+    textSize(32);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    text("Presiona una tecla para comenzar", width / 2, height - 50);
+  } else {
+    // Resto del juego
+
+    // Actualizar y mostrar el fondo
+    image(fondoImages[fondoActual], 0, fondoY, width, height);
+    image(fondoImages[fondoSiguiente], 0, fondoY - height, width, height);
+    fondoY += fondoSpeed;
+    if (fondoY >= height) {
+      fondoY = 0;
+      fondoActual = fondoSiguiente;
+      fondoSiguiente = (fondoSiguiente + 1) % fondoImages.length;
     }
-  }
 
-  // Actualizar y mostrar al jugador
-  jugador.update();
-  jugador.show();
+    // Actualizar y mostrar al jugador
+    jugador.update();
+    jugador.show();
 
-  // Generar enemigos en intervalos de tiempo
-  if (millis() - tiempoUltimoEnemigo > tiempoGenerarEnemigo) {
-    generarEnemigo();
-    tiempoUltimoEnemigo = millis();
-  }
+    // Generar enemigos en intervalos de tiempo
+    if (millis() - tiempoUltimoEnemigo > tiempoGenerarEnemigo) {
+      if (random(1) < 0.5) {
+        generarEnemigos1();
+      } else {
+        generarEnemigos2();
+      }
+      tiempoUltimoEnemigo = millis();
+    }
 
-  // Actualizar y mostrar las balas
-  for (let i = balas.length - 1; i >= 0; i--) {
-    let bala = balas[i];
-    bala.update();
-    bala.show();
+    for (let i = balas.length - 1; i >= 0; i--) {
+      let bala = balas[i];
+      bala.update();
+      bala.show();
 
-    // Verificar colisiones de balas con enemigos
-    for (let j = enemigos.length - 1; j >= 0; j--) {
-      if (bala.hits(enemigos[j])) {
-        enemigos[j].recibirDano(10);
-        balas.splice(i, 1);
+      for (let j = enemigos.length - 1; j >= 0; j--) {
+        if (bala.hits(enemigos[j])) {
+          balas.splice(i, 1);
 
-        // Reproducir el sonido de explosión
-        sonidoExplosion.play();
+          if (enemigos[j].recibirDano(10)) {
+            enemigos[j].activarExplosion();
+            puntaje += enemigos[j].puntos;
+          }
+          break;
+        }
+      }
+    }
 
-        if (enemigos[j].estaMuerto()) {
-          puntaje += enemigos[j].puntos;
-          enemigos.splice(j, 1);
+    // Actualizar y mostrar enemigos
+    for (let i = enemigos.length - 1; i >= 0; i--) {
+      let enemigo = enemigos[i];
+      enemigo.update();
+      
+      if (enemigo.estaMuerto() && !enemigo.estaExplotando()) {
+        // Agregar el enemigo a la lista de enemigos para eliminar
+        enemigosPorEliminar.push(i);
+      } else {
+        enemigo.show();
+      }
+
+      if (enemigo.hits(jugador)) {
+        vida -= 10;
+        if (vida <= 0) {
+          gameOver();
         }
         break;
       }
     }
-  }
 
-  // Actualizar y mostrar enemigos
-  for (let enemigo of enemigos) {
-    enemigo.update();
-    enemigo.show();
-
-    // Verificar colisiones de enemigos con jugador
-    if (enemigo.hits(jugador)) {
-      vida -= 10;
-      enemigos.splice(enemigos.indexOf(enemigo), 1);
-      if (vida <= 0) {
-        gameOver();
-      }
-      break;
+    // Eliminar enemigos que deben eliminarse
+    for (let i = enemigosPorEliminar.length - 1; i >= 0; i--) {
+      let index = enemigosPorEliminar[i];
+      enemigos.splice(index, 1);
     }
-  }
+    // Limpiar la lista de enemigos para eliminar
+    enemigosPorEliminar = [];
 
-  // Mostrar puntaje y vida
-  textSize(20);
-  fill(255);
-  text(`Puntaje: ${puntaje}`, 10, 30);
-  text(`Vida: ${vida}%`, 10, 60);
+    // Mostrar puntaje y vida en el lado derecho
+    textSize(20);
+    fill(255);
+    textAlign(RIGHT);
+    text(`Puntaje: ${puntaje}`, width - 10, 30);
+    text(`Vida: ${vida}%`, width - 10, 60);
+  }
 }
 
 function keyPressed() {
@@ -136,9 +168,10 @@ function keyPressed() {
     jugador.setVelocidad(0, 5);
   } else if (key === ' ' && !juegoEnPausa) {
     balas.push(new Bala(jugador.x + jugador.ancho / 2, jugador.y));
-
-    // Reproducir el sonido de disparo
-    sonidoDisparo.play(); // Quita el punto y coma de aquí
+    if (pantallaBienvenida) {
+      pantallaBienvenida = false;
+    }
+    sonidoDisparo.play();
   } else if (key === 'p') {
     juegoEnPausa = !juegoEnPausa;
     if (juegoEnPausa) {
@@ -225,27 +258,55 @@ class Bala {
 }
 
 class Enemigo {
-  constructor(imagenes, x, y, velocidad) {
+  constructor(imagenes, x, y, velocidadX, velocidadY) {
     this.imagenes = imagenes;
     this.x = x;
     this.y = y;
     this.ancho = 100;
     this.alto = 100;
-    this.velocidad = velocidad;
+    this.velocidadX = velocidadX;
+    this.velocidadY = velocidadY;
     this.puntos = 10;
     this.frame = 0;
+    this.vida = 10;
+    this.explotando = false;
+    this.explosionFrame = 0; // Cada enemigo tiene su propia variable explosionFrame
   }
 
   update() {
-    this.y += this.velocidad;
-    if (this.y > height) {
-      enemigos.splice(enemigos.indexOf(this), 1);
+    if (this.explotando) {
+      this.explosionFrame++;
+      if (this.explosionFrame >= explosionImages.length) {
+        // Eliminar este enemigo de la lista cuando la explosión ha terminado
+        let index = enemigos.indexOf(this);
+        if (index !== -1) {
+          enemigos.splice(index, 1);
+        }
+      }
+    } else {
+      this.x += this.velocidadX;
+      this.y += this.velocidadY;
+      if (this.y > height) {
+        let index = enemigos.indexOf(this);
+        if (index !== -1) {
+          enemigos.splice(index, 1);
+        }
+      }
+      this.frame = (this.frame + 1) % this.imagenes.length;
     }
-    this.frame = (this.frame + 1) % this.imagenes.length;
+  
+    if (this.vida <= 0 && !this.explotando) {
+      this.activarExplosion();
+    }
   }
+  
 
   show() {
-    image(this.imagenes[this.frame], this.x, this.y, this.ancho, this.alto);
+    if (this.explotando) {
+      image(explosionImages[this.explosionFrame], this.x, this.y, this.ancho, this.alto);
+    } else {
+      image(this.imagenes[this.frame], this.x, this.y, this.ancho, this.alto);
+    }
   }
 
   hits(jugador) {
@@ -258,38 +319,52 @@ class Enemigo {
   }
 
   recibirDano(dano) {
-    vida -= dano;
+    this.vida -= dano;
   }
 
   estaMuerto() {
-    return vida <= 0;
+    return this.vida <= 0;
+  }
+
+  activarExplosion() {
+    this.explotando = true;
+    this.explosionFrame = 0;
+    sonidoExplosion.play();
+  }
+
+  estaExplotando() {
+    return this.explotando && this.explosionFrame < explosionImages.length;
   }
 }
 
-function generarEnemigo() {
+function generarEnemigos1() {
   let x = random(width - 100);
   let y = -100;
-  let velocidad = random(1, 5);
-  let imagenes;
-  let r = random(1);
-  if (r < 0.3) {
-    imagenes = marcianoImages;
-  } else if (r < 0.6) {
-    imagenes = helicopterImages;
-  } else {
+  let velocidadX = 0;
+  let velocidadY = random(1, 5);
+  let imagenes = marcianoImages;
+  enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY));
+}
+
+function generarEnemigos2() {
+  let x, y, velocidadX, velocidadY, imagenes;
+
+  if (random(1) < 0.5) {
+    x = -100;
+    y = random(height - 100);
+    velocidadX = random(1, 5);
+    velocidadY = 0;
     imagenes = helicopter1Images;
+  } else {
+    x = width;
+    y = random(height - 100);
+    velocidadX = -random(1, 5);
+    velocidadY = 0;
+    imagenes = helicopterImages;
   }
-  enemigos.push(new Enemigo(imagenes, x, y, velocidad));
+
+  enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY));
 }
 
-// Usar setTimeout en lugar de setInterval
-function generarEnemigosPeriodicamente() {
-  generarEnemigo();
-  setTimeout(generarEnemigosPeriodicamente, tiempoGenerarEnemigo);
-}
-
-setTimeout(generarEnemigosPeriodicamente, tiempoGenerarEnemigo);
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-}
+setInterval(generarEnemigos1, tiempoGenerarEnemigo);
+setInterval(generarEnemigos2, tiempoGenerarEnemigo);

@@ -9,24 +9,28 @@
             margin: 0;
             overflow: hidden;
             background-color: black;
-        }
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        } 
         canvas {
+            width: 100%;
+            height: 100%;
             display: block;
         }
     </style>
 </head>
 <body>
-    <button id="boton-iniciar">Iniciar Juego</button>
     <canvas></canvas>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>       
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.js"></script>
     <script src="game.js"></script>
     <script>
-        // Agrega un evento click al botón para iniciar el juego y el contexto de audio.
-        document.querySelector('#boton-iniciar').addEventListener('click', function() {
-            userStartAudio(); // Inicia el contexto de audio después de un clic.
-            setup(); // Inicia el juego.
-        });
+        // Iniciar el contexto de audio al cargar la página
+        userStartAudio();
+        // Iniciar el juego automáticamente
+        setup();
     </script>
 </body>
 </html>
