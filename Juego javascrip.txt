@@ -28,29 +28,23 @@ let transicion = 0;
 let enemigosPorEliminar = [];
 
 function preload() {
-  const repoBaseUrl = 'https://raw.githubusercontent.com/Rlaradiaz/Shooting_Nostalgia/Shooting/';
-  
-  // Load Marciano images
+  // Cargar imágenes
   for (let i = 1; i <= 15; i++) {
-    marcianoImages.push(loadImage(`${repoBaseUrl}imagenes/Marciano/${i}.png`));
+    marcianoImages.push(loadImage(`marciano/${i}.png`));
   }
-
-  // Load other images and sounds as needed using a similar approach.
   for (let i = 1; i <= 8; i++) {
-    helicopterImages.push(loadImage(`${repoBaseUrl}Helicoptero/${i}.png`));
-    helicopter1Images.push(loadImage(`${repoBaseUrl}Helicoptero/${i}.png`));
+    helicopterImages.push(loadImage(`helicoptero/${i}.png`));
+    helicopter1Images.push(loadImage(`helicoptero1/${i}.png`));
   }
   for (let i = 1; i <= 7; i++) {
-    bossImages.push(loadImage(`${repoBaseUrl}Boss/${i}.png`));
+    bossImages.push(loadImage(`Boss/${i}.png`));
   }
   for (let i = 1; i <= 12; i++) {
-    explosionImages.push(loadImage(`${repoBaseUrl}explosion/${i}.png`));
+    explosionImages.push(loadImage(`explosion/${i}.png`));
   }
   for (let i = 1; i <= 4; i++) {
-    fondoImages.push(loadImage(`${repoBaseUrl}imagenes/juego${i}.jpg`));
+    fondoImages.push(loadImage(`imagenes/juego${i}.jpg`));
   }
-  
-
 
   // Cargar sonidos
   sonidoDisparo = loadSound('sounds/laser.wav');
