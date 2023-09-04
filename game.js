@@ -33,11 +33,11 @@ function preload() {
     marcianoImages.push(loadImage(`marciano/${i}.png`));
   }
   for (let i = 1; i <= 8; i++) {
-    helicopterImages.push(loadImage(`Helicoptero/${i}.png`));
-    helicopter1Images.push(loadImage(`Helicoptero1/${i}.png`));
+    helicopterImages.push(loadImage(`helicoptero/${i}.png`));
+    helicopter1Images.push(loadImage(`helicoptero1/${i}.png`));
   }
   for (let i = 1; i <= 7; i++) {
-    bossImages.push(loadImage(`Boss/${i}.png`));
+    bossImages.push(loadImage(`boss/${i}.png`));
   }
   for (let i = 1; i <= 12; i++) {
     explosionImages.push(loadImage(`explosion/${i}.png`));
