@@ -58,12 +58,19 @@ function setup() {
   let fondoWidth = fondoImages[0].width;
   let fondoHeight = fondoImages[0].height;
 
-  createCanvas(fondoWidth, fondoHeight);
-  jugador = new Jugador(fondoWidth / 2, fondoHeight - 50);
+  // Crear el lienzo con el ancho de la imagen de fondo y la altura de la ventana
+  createCanvas(fondoWidth, windowHeight);
+
+  jugador = new Jugador(width / 2, height - 50);
   musicaFondo.loop();
   pantallaBienvenida = true;
 }
 
+function windowResized() {
+  // Ajustar el ancho del lienzo al ancho de la imagen de fondo
+  let fondoWidth = fondoImages[0].width;
+  resizeCanvas(fondoWidth, windowHeight);
+}
 
 function draw() {
   if (pantallaBienvenida) {
