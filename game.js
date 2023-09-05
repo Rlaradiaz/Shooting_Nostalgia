@@ -54,11 +54,12 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(800, 600); // Tamaño fijo
   jugador = new Jugador(width / 2, height - 50);
   musicaFondo.loop();
   pantallaBienvenida = true;
 }
+
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
