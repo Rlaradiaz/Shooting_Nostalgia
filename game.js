@@ -15,16 +15,16 @@ let sonidoDisparo;
 let sonidoExplosion;
 let juegoEnPausa = false;
 let tiempoUltimoEnemigo = 0;
-let tiempoGenerarEnemigo = 2000;
+let tiempoGenerarEnemigo = 2000; // Generar enemigos cada 60 segundos (en milisegundos)
 let musicaFondo;
 let imagenBienvenida;
 let pantallaBienvenida = true;
+let tiempoPausa = 0;
 
 let fondoActual = 0;
 let fondoSiguiente = 1;
 let transicion = 0;
-//lista
-// Nueva lista para enemigos que deben eliminarse
+// Lista para enemigos que deben eliminarse
 let enemigosPorEliminar = [];
 
 function preload() {
@@ -62,8 +62,7 @@ function setup() {
   createCanvas(fondoWidth, windowHeight);
 
   jugador = new Jugador(width / 2, height - 50);
-  musicaFondo.loop();
-  pantallaBienvenida = true;
+  imagenBienvenida.resize(width, height);
 }
 
 function windowResized() {
@@ -75,7 +74,7 @@ function windowResized() {
 function draw() {
   if (pantallaBienvenida) {
     // Muestra la imagen de bienvenida
-    image(imagenBienvenida, 0, 0, width, height);
+    image(imagenBienvenida, 0, 0);
 
     // Agrega un mensaje o cualquier otro elemento que desees
     textSize(32);
@@ -83,7 +82,6 @@ function draw() {
     textAlign(CENTER, CENTER);
     text("Presiona una tecla para comenzar", width / 2, height - 50);
   } else {
-   
     // Actualizar y mostrar el fondo
     image(fondoImages[fondoActual], 0, fondoY, width, height);
     image(fondoImages[fondoSiguiente], 0, fondoY - height, width, height);
@@ -98,8 +96,8 @@ function draw() {
     jugador.update();
     jugador.show();
 
-    // Generar enemigos en intervalos de tiempo
-    if (millis() - tiempoUltimoEnemigo > tiempoGenerarEnemigo) {
+    // Generar enemigos solo si el juego no está en pausa
+    if (!juegoEnPausa && millis() - tiempoUltimoEnemigo > tiempoGenerarEnemigo) {
       if (random(1) < 0.5) {
         generarEnemigos1();
       } else {
@@ -108,20 +106,22 @@ function draw() {
       tiempoUltimoEnemigo = millis();
     }
 
+    // Actualizar y mostrar balas
     for (let i = balas.length - 1; i >= 0; i--) {
       let bala = balas[i];
       bala.update();
       bala.show();
 
+      // Comprobar colisiones con enemigos
       for (let j = enemigos.length - 1; j >= 0; j--) {
-        if (bala.hits(enemigos[j])) {
+        let enemigo = enemigos[j];
+        if (bala.hits(enemigo)) {
           balas.splice(i, 1);
-
-          if (enemigos[j].recibirDano(10)) {
-            enemigos[j].activarExplosion();
-            puntaje += enemigos[j].puntos;
+          if (enemigo.recibirDano(10)) {
+            enemigo.activarExplosion();
+            puntaje += enemigo.puntos;
           }
-          break;
+          break; // Romper el bucle para esta bala
         }
       }
     }
@@ -130,7 +130,7 @@ function draw() {
     for (let i = enemigos.length - 1; i >= 0; i--) {
       let enemigo = enemigos[i];
       enemigo.update();
-      
+
       if (enemigo.estaMuerto() && !enemigo.estaExplotando()) {
         // Agregar el enemigo a la lista de enemigos para eliminar
         enemigosPorEliminar.push(i);
@@ -143,7 +143,7 @@ function draw() {
         if (vida <= 0) {
           gameOver();
         }
-        break;
+        break; // Romper el bucle si el jugador es golpeado
       }
     }
 
@@ -177,13 +177,19 @@ function keyPressed() {
     balas.push(new Bala(jugador.x + jugador.ancho / 2, jugador.y));
     if (pantallaBienvenida) {
       pantallaBienvenida = false;
+      musicaFondo.play(); // Reproducir música al presionar una tecla
     }
     sonidoDisparo.play();
   } else if (key === 'p') {
     juegoEnPausa = !juegoEnPausa;
     if (juegoEnPausa) {
+      tiempoPausa = millis();
+      musicaFondo.pause(); // Pausar la música cuando el juego está en pausa
       noLoop();
     } else {
+      let tiempoPausado = millis() - tiempoPausa;
+      tiempoUltimoEnemigo += tiempoPausado; // Añadir el tiempo pausado al tiempo de generación de enemigos
+      musicaFondo.play(); // Reanudar la música cuando el juego se reanuda
       loop();
     }
   }
@@ -277,7 +283,7 @@ class Enemigo {
     this.frame = 0;
     this.vida = 10;
     this.explotando = false;
-    this.explosionFrame = 0; // Cada enemigo tiene su propia variable explosionFrame
+    this.explosionFrame = 0;
   }
 
   update() {
@@ -290,10 +296,14 @@ class Enemigo {
           enemigos.splice(index, 1);
         }
       }
+    } else if (this.vida <= 0) {
+      // Si el enemigo no está explotando y su vida llega a 0 o menos, activar la explosión
+      this.activarExplosion();
     } else {
       this.x += this.velocidadX;
       this.y += this.velocidadY;
       if (this.y > height) {
+        // Eliminar al enemigo si se sale de la pantalla
         let index = enemigos.indexOf(this);
         if (index !== -1) {
           enemigos.splice(index, 1);
@@ -301,12 +311,7 @@ class Enemigo {
       }
       this.frame = (this.frame + 1) % this.imagenes.length;
     }
-  
-    if (this.vida <= 0 && !this.explotando) {
-      this.activarExplosion();
-    }
   }
-  
 
   show() {
     if (this.explotando) {
@@ -327,6 +332,11 @@ class Enemigo {
 
   recibirDano(dano) {
     this.vida -= dano;
+    if (this.vida <= 0 && !this.explotando) {
+      this.activarExplosion();
+      return true; // Devolver verdadero si la vida es igual o menor a 0
+    }
+    return false; // Devolver falso si la vida aún es mayor a 0
   }
 
   estaMuerto() {
@@ -337,12 +347,14 @@ class Enemigo {
     this.explotando = true;
     this.explosionFrame = 0;
     sonidoExplosion.play();
+    puntaje += this.puntos; // Incrementar el puntaje en 10 cuando el enemigo explota
   }
 
   estaExplotando() {
     return this.explotando && this.explosionFrame < explosionImages.length;
   }
 }
+
 
 function generarEnemigos1() {
   let x = random(width - 100);
@@ -373,5 +385,14 @@ function generarEnemigos2() {
   enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY));
 }
 
-setInterval(generarEnemigos1, tiempoGenerarEnemigo);
-setInterval(generarEnemigos2, tiempoGenerarEnemigo);
+function generarEnemigos() {
+  if (!juegoEnPausa) {
+    if (random(1) < 0.5) {
+      generarEnemigos1();
+    } else {
+      generarEnemigos2();
+    }
+  }
+}
+
+setInterval(generarEnemigos, tiempoGenerarEnemigo);

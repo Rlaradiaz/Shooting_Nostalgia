@@ -1,31 +1,24 @@
+/* Establece el estilo para el cuerpo del documento */
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow: hidden;
-  }
-  
-  body {
+    background-color: black;
+}
+
+/* Establece el estilo para el contenedor del juego */
+#game-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: black;
-  }
-  
-  #game-container {
-    position: relative;
-    width: 100%; /* Ajusta el ancho al 100% del ancho de la ventana */
-    max-width: 100%;
+    width: 100%;
     height: 100%;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center; /* Centra el contenido verticalmente */
-  }
-  
-  canvas {
+    position: relative; /* Agrega esta línea */
+}
+
+/* Establece el estilo para el lienzo (canvas) dentro del contenedor */
+canvas {
     display: block;
-    max-width: 100%; /* Ajusta el ancho máximo del lienzo al 100% */
-    height: auto; /* Permite que la altura se ajuste automáticamente */
-  }
-  
+    margin: 0 auto;
+}
