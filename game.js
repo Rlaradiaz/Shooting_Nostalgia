@@ -233,6 +233,7 @@ class Jugador {
     this.y = y;
     this.movimientoX = 0;
     this.movimientoY = 0;
+    this.vida = 100; // Agrega la vida del jugador y establece su valor inicial
   }
 
   update() {
@@ -250,6 +251,13 @@ class Jugador {
   setMovimiento(x, y) {
     this.movimientoX = x;
     this.movimientoY = y;
+  }
+
+  recibirDano(dano) {
+    this.vida -= dano; // Reducir la vida del jugador en la cantidad especificada.
+    if (this.vida <= 0) {
+      gameOver(); // Llamar a la función de Game Over cuando la vida del jugador llega a 0 o menos.
+    }
   }
 }
 
@@ -334,21 +342,33 @@ class Enemigo {
   }
 
   hits(jugador) {
-    return (
+    if (
       this.x < jugador.x + jugador.ancho &&
       this.x + this.ancho > jugador.x &&
       this.y < jugador.y + jugador.alto &&
       this.y + this.alto > jugador.y
-    );
+    ) {
+      if (!this.explotando && !this.haColisionadoConJugador) {
+        jugador.recibirDano(20); // Disminuir la vida del jugador en 20.
+        this.haColisionadoConJugador = true; // Marcar que ya ha colisionado con el jugador
+      }
+      if (!this.explotando) {
+        this.activarExplosion(); // Activar la explosión del enemigo si aún no lo está.
+      }
+      return true;
+    }
+    return false;
   }
+  
+  
 
   recibirDano(dano) {
     this.vida -= dano;
     if (this.vida <= 0 && !this.explotando) {
       this.activarExplosion();
-      return true; // Devolver verdadero si la vida es igual o menor a 0
+      return true;
     }
-    return false; // Devolver falso si la vida aún es mayor a 0
+    return false;
   }
 
   estaMuerto() {
@@ -359,13 +379,14 @@ class Enemigo {
     this.explotando = true;
     this.explosionFrame = 0;
     sonidoExplosion.play();
-    puntaje += this.puntos; // Incrementar el puntaje en 10 cuando el enemigo explota
+    puntaje += this.puntos;
   }
 
   estaExplotando() {
     return this.explotando && this.explosionFrame < explosionImages.length;
   }
 }
+
 
 function generarEnemigos1() {
   let x = random(width - 100);
