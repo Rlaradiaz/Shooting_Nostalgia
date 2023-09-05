@@ -50,7 +50,7 @@ function preload() {
   sonidoDisparo = loadSound('sounds/laser.wav');
   sonidoExplosion = loadSound('sounds/explosion.wav');
   musicaFondo = loadSound('mega.mp3');
-  imagenBienvenida = loadImage('imagenes/cat2.jpeg');
+  imagenBienvenida = loadImage('imagenes/cat.jpeg');
 }
 
 function setup() {
