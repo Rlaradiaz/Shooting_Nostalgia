@@ -23,7 +23,7 @@ let pantallaBienvenida = true;
 let fondoActual = 0;
 let fondoSiguiente = 1;
 let transicion = 0;
-
+//lista
 // Nueva lista para enemigos que deben eliminarse
 let enemigosPorEliminar = [];
 
@@ -75,8 +75,7 @@ function draw() {
     textAlign(CENTER, CENTER);
     text("Presiona una tecla para comenzar", width / 2, height - 50);
   } else {
-    // Resto del juego
-
+   
     // Actualizar y mostrar el fondo
     image(fondoImages[fondoActual], 0, fondoY, width, height);
     image(fondoImages[fondoSiguiente], 0, fondoY - height, width, height);
