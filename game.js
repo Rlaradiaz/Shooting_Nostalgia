@@ -20,12 +20,9 @@ let musicaFondo;
 let imagenBienvenida;
 let pantallaBienvenida = true;
 let tiempoPausa = 0;
-
 let fondoActual = 0;
 let fondoSiguiente = 1;
 let transicion = 0;
-// Lista para enemigos que deben eliminarse
-let enemigosPorEliminar = [];
 
 function preload() {
   // Cargar imágenes
@@ -112,16 +109,26 @@ function draw() {
       bala.update();
       bala.show();
 
+      // Variable para verificar si la bala colisionó con algún enemigo
+      let balaColisiono = false;
+
       // Comprobar colisiones con enemigos
       for (let j = enemigos.length - 1; j >= 0; j--) {
         let enemigo = enemigos[j];
         if (bala.hits(enemigo)) {
-          balas.splice(i, 1);
+          // Marcamos que la bala colisionó con un enemigo
+          balaColisiono = true;
+
+          // Reducimos la vida del enemigo y activamos la explosión si es necesario
           if (enemigo.recibirDano(10)) {
-            enemigo.activarExplosion();
             puntaje += enemigo.puntos;
           }
-          break; // Romper el bucle para esta bala
+
+          // Eliminamos la bala
+          balas.splice(i, 1);
+
+          // No es necesario eliminar el enemigo aquí
+          // Ya que solo queremos eliminarlo una vez que explote
         }
       }
     }
@@ -132,8 +139,7 @@ function draw() {
       enemigo.update();
 
       if (enemigo.estaMuerto() && !enemigo.estaExplotando()) {
-        // Agregar el enemigo a la lista de enemigos para eliminar
-        enemigosPorEliminar.push(i);
+        enemigo.activarExplosion();
       } else {
         enemigo.show();
       }
@@ -147,14 +153,6 @@ function draw() {
       }
     }
 
-    // Eliminar enemigos que deben eliminarse
-    for (let i = enemigosPorEliminar.length - 1; i >= 0; i--) {
-      let index = enemigosPorEliminar[i];
-      enemigos.splice(index, 1);
-    }
-    // Limpiar la lista de enemigos para eliminar
-    enemigosPorEliminar = [];
-
     // Mostrar puntaje y vida en el lado derecho
     textSize(20);
     fill(255);
@@ -165,41 +163,42 @@ function draw() {
 }
 
 function keyPressed() {
-  if (keyCode === LEFT_ARROW) {
-    jugador.setVelocidad(-5, 0);
-  } else if (keyCode === RIGHT_ARROW) {
-    jugador.setVelocidad(5, 0);
-  } else if (keyCode === UP_ARROW) {
-    jugador.setVelocidad(0, -5);
-  } else if (keyCode === DOWN_ARROW) {
-    jugador.setVelocidad(0, 5);
-  } else if (key === ' ' && !juegoEnPausa) {
-    balas.push(new Bala(jugador.x + jugador.ancho / 2, jugador.y));
-    if (pantallaBienvenida) {
-      pantallaBienvenida = false;
-      musicaFondo.play(); // Reproducir música al presionar una tecla
-    }
-    sonidoDisparo.play();
-  } else if (key === 'p') {
-    juegoEnPausa = !juegoEnPausa;
-    if (juegoEnPausa) {
-      tiempoPausa = millis();
-      musicaFondo.pause(); // Pausar la música cuando el juego está en pausa
-      noLoop();
-    } else {
-      let tiempoPausado = millis() - tiempoPausa;
-      tiempoUltimoEnemigo += tiempoPausado; // Añadir el tiempo pausado al tiempo de generación de enemigos
-      musicaFondo.play(); // Reanudar la música cuando el juego se reanuda
-      loop();
+  if (pantallaBienvenida) {
+    pantallaBienvenida = false;
+    musicaFondo.loop(); // Reproducir música al presionar una tecla y hacer que se repita
+  } else {
+    if (keyCode === LEFT_ARROW) {
+      jugador.setMovimiento(-5, 0);
+    } else if (keyCode === RIGHT_ARROW) {
+      jugador.setMovimiento(5, 0);
+    } else if (keyCode === UP_ARROW) {
+      jugador.setMovimiento(0, -5);
+    } else if (keyCode === DOWN_ARROW) {
+      jugador.setMovimiento(0, 5);
+    } else if (key === ' ' && !juegoEnPausa) {
+      balas.push(new Bala(jugador.x + jugador.ancho / 2, jugador.y));
+      sonidoDisparo.play();
+    } else if (key === 'p') {
+      juegoEnPausa = !juegoEnPausa;
+      if (juegoEnPausa) {
+        tiempoPausa = millis();
+        musicaFondo.pause(); // Pausar la música cuando el juego está en pausa
+        noLoop();
+      } else {
+        let tiempoPausado = millis() - tiempoPausa;
+        tiempoUltimoEnemigo += tiempoPausado; // Añadir el tiempo pausado al tiempo de generación de enemigos
+        musicaFondo.play(); // Reanudar la música cuando el juego se reanuda
+        loop();
+      }
     }
   }
 }
 
 function keyReleased() {
   if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
-    jugador.setVelocidad(0, 0);
+    jugador.setMovimiento(0, 0);
   } else if (keyCode === UP_ARROW || keyCode === DOWN_ARROW) {
-    jugador.setVelocidad(0, 0);
+    jugador.setMovimiento(0, 0);
   }
 }
 
@@ -209,7 +208,20 @@ function gameOver() {
   fill(255);
   textAlign(CENTER, CENTER);
   text("Game Over", width / 2, height / 2);
+  textSize(32);
+  text("Presiona 'R' para volver a intentar", width / 2, height / 2 + 50);
   noLoop();
+}
+
+function resetGame() {
+  fondoY = 0;
+  puntaje = 0;
+  vida = 100;
+  tiempoUltimoEnemigo = millis();
+  enemigos = [];
+  balas = [];
+  jugador = new Jugador(width / 2, height - 50);
+  loop();
 }
 
 class Jugador {
@@ -219,13 +231,13 @@ class Jugador {
     this.alto = 100;
     this.x = x;
     this.y = y;
-    this.velX = 0;
-    this.velY = 0;
+    this.movimientoX = 0;
+    this.movimientoY = 0;
   }
 
   update() {
-    this.x += this.velX;
-    this.y += this.velY;
+    this.x += this.movimientoX;
+    this.y += this.movimientoY;
 
     this.x = constrain(this.x, 0, width - this.ancho);
     this.y = constrain(this.y, 0, height - this.alto);
@@ -235,9 +247,9 @@ class Jugador {
     image(this.imagen, this.x, this.y, this.ancho, this.alto);
   }
 
-  setVelocidad(x, y) {
-    this.velX = x;
-    this.velY = y;
+  setMovimiento(x, y) {
+    this.movimientoX = x;
+    this.movimientoY = y;
   }
 }
 
@@ -355,7 +367,6 @@ class Enemigo {
   }
 }
 
-
 function generarEnemigos1() {
   let x = random(width - 100);
   let y = -100;
@@ -396,3 +407,48 @@ function generarEnemigos() {
 }
 
 setInterval(generarEnemigos, tiempoGenerarEnemigo);
+
+function keyPressed() {
+  if (pantallaBienvenida) {
+    pantallaBienvenida = false;
+    musicaFondo.loop(); // Reproducir música al presionar una tecla y hacer que se repita
+  } else {
+    if (keyCode === LEFT_ARROW) {
+      jugador.setMovimiento(-5, 0);
+    } else if (keyCode === RIGHT_ARROW) {
+      jugador.setMovimiento(5, 0);
+    } else if (keyCode === UP_ARROW) {
+      jugador.setMovimiento(0, -5);
+    } else if (keyCode === DOWN_ARROW) {
+      jugador.setMovimiento(0, 5);
+    } else if (key === ' ' && !juegoEnPausa) {
+      balas.push(new Bala(jugador.x + jugador.ancho / 2, jugador.y));
+      sonidoDisparo.play();
+    } else if (key === 'p') {
+      juegoEnPausa = !juegoEnPausa;
+      if (juegoEnPausa) {
+        tiempoPausa = millis();
+        musicaFondo.pause(); // Pausar la música cuando el juego está en pausa
+        noLoop();
+      } else {
+        let tiempoPausado = millis() - tiempoPausa;
+        tiempoUltimoEnemigo += tiempoPausado; // Añadir el tiempo pausado al tiempo de generación de enemigos
+        musicaFondo.play(); // Reanudar la música cuando el juego se reanuda
+        loop();
+      }
+    } else if (key === 'r') {
+      resetGame();
+    }
+  }
+}
+
+function resetGame() {
+  fondoY = 0;
+  puntaje = 0;
+  vida = 100;
+  tiempoUltimoEnemigo = millis();
+  enemigos = [];
+  balas = [];
+  jugador = new Jugador(width / 2, height - 50);
+  loop();
+}
