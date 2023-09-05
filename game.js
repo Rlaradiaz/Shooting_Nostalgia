@@ -54,15 +54,16 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  jugador = new Jugador(width / 2, height - 50);
+  // Obtener el tamaño de una de las imágenes de fondo (suponiendo que todas son del mismo tamaño)
+  let fondoWidth = fondoImages[0].width;
+  let fondoHeight = fondoImages[0].height;
+
+  createCanvas(fondoWidth, fondoHeight);
+  jugador = new Jugador(fondoWidth / 2, fondoHeight - 50);
   musicaFondo.loop();
   pantallaBienvenida = true;
 }
 
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-}
 
 function draw() {
   if (pantallaBienvenida) {
