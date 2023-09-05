@@ -33,8 +33,8 @@ function preload() {
     marcianoImages.push(loadImage(`marciano/${i}.png`));
   }
   for (let i = 1; i <= 8; i++) {
-    helicopterImages.push(loadImage(`helicoptero/${i}.png`));
-    helicopter1Images.push(loadImage(`helicoptero1/${i}.png`));
+    helicopterImages.push(loadImage(`helicoptero2/${i}.png`));
+    helicopter1Images.push(loadImage(`helicoptero3/${i}.png`));
   }
   for (let i = 1; i <= 7; i++) {
     bossImages.push(loadImage(`Boss/${i}.png`));
