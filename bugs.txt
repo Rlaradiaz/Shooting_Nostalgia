@@ -1,0 +1,13 @@
+1. presiona izquierda, dejar undido izquierda y presionar derecha, el mancito se comienza a mover a la derecha, suelta izquierda, deberia seguir moviendo a la derecha, pero se queda quieto
+
+
+si cuando perdes, apretas constantemente la p  llega un momento en que podes continuar sin  resetear
+
+2. si logras avanzar un rato (30 segundos aprox) y te golepan, el juego queda pasmado
+
+3. estoy intentando subir en diagonal, entonces dejo undido derecha, luego undo arriba sin soltar derecha y comienza a subir, bien. pero si suelto arriba, yo esperaria que el mancito siga andando a la derecha, porque lo tengo undido, pero nada, se queda quieto.
+
+Sonido muy duro
+
+Tamaño
+
