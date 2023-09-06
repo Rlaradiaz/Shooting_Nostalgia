@@ -168,13 +168,13 @@ function keyPressed() {
     musicaFondo.loop(); // Reproducir música al presionar una tecla y hacer que se repita
   } else {
     if (keyCode === LEFT_ARROW) {
-      jugador.setMovimiento(-5, 0);
+      jugador.moverIzquierda = true;
     } else if (keyCode === RIGHT_ARROW) {
-      jugador.setMovimiento(5, 0);
+      jugador.moverDerecha = true;
     } else if (keyCode === UP_ARROW) {
-      jugador.setMovimiento(0, -5);
+      jugador.moverArriba = true;
     } else if (keyCode === DOWN_ARROW) {
-      jugador.setMovimiento(0, 5);
+      jugador.moverAbajo = true;
     } else if (key === ' ' && !juegoEnPausa) {
       balas.push(new Bala(jugador.x + jugador.ancho / 2, jugador.y));
       sonidoDisparo.play();
@@ -194,14 +194,19 @@ function keyPressed() {
   }
 }
 
+
+
 function keyReleased() {
-  if (keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
-    jugador.setMovimiento(0, 0);
-  } else if (keyCode === UP_ARROW || keyCode === DOWN_ARROW) {
-    jugador.setMovimiento(0, 0);
+  if (keyCode === LEFT_ARROW) {
+    jugador.moverIzquierda = false;
+  } else if (keyCode === RIGHT_ARROW) {
+    jugador.moverDerecha = false;
+  } else if (keyCode === UP_ARROW) {
+    jugador.moverArriba = false;
+  } else if (keyCode === DOWN_ARROW) {
+    jugador.moverAbajo = false;
   }
 }
-
 function gameOver() {
   background(0);
   textSize(50);
@@ -225,20 +230,35 @@ function resetGame() {
 }
 
 class Jugador {
-  constructor(x, y) {
+  constructor() {
     this.imagen = loadImage("Resized_Nave.png");
     this.ancho = 100;
     this.alto = 100;
-    this.x = x;
-    this.y = y;
-    this.movimientoX = 0;
-    this.movimientoY = 0;
-    this.vida = 100; // Agrega la vida del jugador y establece su valor inicial
+    this.x = width / 2;
+    this.y = height - 100;
+    this.velocidadX = 0;
+    this.velocidadY = 0;
+    this.vida = 100;
   }
 
   update() {
-    this.x += this.movimientoX;
-    this.y += this.movimientoY;
+    this.velocidadX = 0;
+    this.velocidadY = 0;
+
+    if (keyIsDown(LEFT_ARROW)) {
+      this.velocidadX = -5;
+    } else if (keyIsDown(RIGHT_ARROW)) {
+      this.velocidadX = 5;
+    }
+
+    if (keyIsDown(UP_ARROW)) {
+      this.velocidadY = -5;
+    } else if (keyIsDown(DOWN_ARROW)) {
+      this.velocidadY = 5;
+    }
+
+    this.x += this.velocidadX;
+    this.y += this.velocidadY;
 
     this.x = constrain(this.x, 0, width - this.ancho);
     this.y = constrain(this.y, 0, height - this.alto);
@@ -248,10 +268,17 @@ class Jugador {
     image(this.imagen, this.x, this.y, this.ancho, this.alto);
   }
 
+
   setMovimiento(x, y) {
-    this.movimientoX = x;
-    this.movimientoY = y;
-  }
+    if (x === 0 && y === 0) {
+      // Si no se presiona ninguna tecla de movimiento, establecer movimiento a cero
+      this.movimientoX = 0;
+      this.movimientoY = 0;
+    } else {
+      this.movimientoX = x;
+      this.movimientoY = y;
+    }
+  }  
 
   recibirDano(dano) {
     this.vida -= dano; // Reducir la vida del jugador en la cantidad especificada.
