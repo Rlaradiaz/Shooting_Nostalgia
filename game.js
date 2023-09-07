@@ -24,30 +24,51 @@ let fondoActual = 0;
 let fondoSiguiente = 1;
 let transicion = 0;
 
+function logError(message) {
+  console.error(message);
+}
+
 function preload() {
   // Cargar imágenes
   for (let i = 1; i <= 15; i++) {
-    marcianoImages.push(loadImage(`marciano/${i}.png`));
+    marcianoImages.push(loadImage(`marciano/${i}.png`, imagenCargada, imagenError));
   }
   for (let i = 1; i <= 8; i++) {
-    helicopterImages.push(loadImage(`helicoptero2/${i}.png`));
-    helicopter1Images.push(loadImage(`helicoptero3/${i}.png`));
+    helicopterImages.push(loadImage(`helicoptero2/${i}.png`, imagenCargada, imagenError));
+    helicopter1Images.push(loadImage(`helicoptero3/${i}.png`, imagenCargada, imagenError));
   }
   for (let i = 1; i <= 7; i++) {
-    bossImages.push(loadImage(`Boss/${i}.png`));
+    bossImages.push(loadImage(`Boss/${i}.png`, imagenCargada, imagenError));
   }
   for (let i = 1; i <= 12; i++) {
-    explosionImages.push(loadImage(`explosion/${i}.png`));
+    explosionImages.push(loadImage(`explosion/${i}.png`, () => console.log(`Cargada imagen de explosión ${i}`)));
   }
   for (let i = 1; i <= 4; i++) {
-    fondoImages.push(loadImage(`imagenes/juego${i}.jpg`));
+    fondoImages.push(loadImage(`imagenes/juego${i}.jpg`, imagenCargada, imagenError));
   }
 
-  // Cargar sonidos
-  sonidoDisparo = loadSound('sounds/laser.wav');
-  sonidoExplosion = loadSound('sounds/explosion.wav');
-  musicaFondo = loadSound('mega.mp3');
+  // Cargar sonidos y otros recursos aquí...
+
+  sonidoDisparo = loadSound('sounds/laser.wav', sonidoCargado, sonidoError);
+  sonidoExplosion = loadSound('sounds/explosion.wav', sonidoCargado, sonidoError);
+  musicaFondo = loadSound('mega.mp3', sonidoCargado, sonidoError);
   imagenBienvenida = loadImage('imagenes/cat.jpeg');
+}
+
+function imagenCargada(img) {
+  console.log(`Imagen cargada: ${img.src}`);
+}
+
+function imagenError(err) {
+  console.error(`Error al cargar la imagen: ${err.path}`);
+}
+
+function sonidoCargado(sound) {
+  console.log(`Sonido cargado: ${sound.url}`);
+}
+
+function sonidoError(err) {
+  console.error(`Error al cargar el sonido: ${err.path}`);
 }
 
 function setup() {
@@ -360,13 +381,40 @@ class Enemigo {
     }
   }
 
+
+  
+
   show() {
+    console.log("this.imagenes:", this.imagenes);
+    console.log("this.frame:", this.frame);
+    console.log("this.explosionFrame:", this.explosionFrame);
+
     if (this.explotando) {
       image(explosionImages[this.explosionFrame], this.x, this.y, this.ancho, this.alto);
     } else {
       image(this.imagenes[this.frame], this.x, this.y, this.ancho, this.alto);
     }
   }
+
+
+  show() {
+    if (this.explotando) {
+      if (explosionImages[this.explosionFrame]) {
+        image(explosionImages[this.explosionFrame], this.x, this.y, this.ancho, this.alto);
+      } else {
+        console.log(`Imagen de explosión ${this.explosionFrame} no definida.`);
+        logError(`Imagen de explosión ${this.explosionFrame} no definida.`);
+      }
+    } else {
+      if (this.imagenes[this.frame]) {
+        image(this.imagenes[this.frame], this.x, this.y, this.ancho, this.alto);
+      } else {
+        console.log(`Imagen ${this.frame} no definida.`);
+        logError(`Imagen ${this.frame} no definida.`);
+      }
+    }
+  }
+  
 
   hits(jugador) {
     if (
