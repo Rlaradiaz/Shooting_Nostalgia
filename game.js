@@ -15,7 +15,7 @@ let sonidoDisparo;
 let sonidoExplosion;
 let juegoEnPausa = false;
 let tiempoUltimoEnemigo = 0;
-let tiempoGenerarEnemigo = 2000; // Generar enemigos cada 60 segundos (en milisegundos)
+let tiempoGenerarEnemigo = 1000; // Generar enemigos cada 60 segundos (en milisegundos)
 let musicaFondo;
 let imagenBienvenida;
 let pantallaBienvenida = true;
@@ -23,6 +23,8 @@ let tiempoPausa = 0;
 let fondoActual = 0;
 let fondoSiguiente = 1;
 let transicion = 0;
+let boss = null; // Variable para el jefe
+let bossAppeared = false;
 
 function logError(message) {
   console.error(message);
@@ -88,6 +90,7 @@ function windowResized() {
   let fondoWidth = fondoImages[0].width;
   resizeCanvas(fondoWidth, windowHeight);
 }
+
 
 function draw() {
   if (pantallaBienvenida) {
@@ -172,6 +175,17 @@ function draw() {
         }
         break; // Romper el bucle si el jugador es golpeado
       }
+      if (puntaje >= 500 && !bossAppeared) {
+        // Create the boss
+        boss = new Boss();
+        bossAppeared = true; // Set a flag to indicate the boss has appeared
+      }
+  
+      // Update and display the boss if it exists
+      if (boss) {
+        boss.update();
+        boss.draw();
+      }  
     }
 
     // Mostrar puntaje y vida en el lado derecho
@@ -182,6 +196,8 @@ function draw() {
     text(`Vida: ${vida}%`, width - 10, 60);
   }
 }
+
+
 
 function keyPressed() {
   if (pantallaBienvenida) {
@@ -463,6 +479,107 @@ class Enemigo {
 }
 
 
+class Boss {
+  constructor() {
+    this.imageList = [];
+    this.imageIndex = 0;
+    this.image = null;
+    this.health = 1500;
+    this.velocityX = 0.3;
+    this.velocityY = 0.3;
+    this.imageChangeInterval = 100;
+    this.lastImageChangeTime = 0;
+
+    // Load boss images
+    for (let i = 1; i <= 6; i++) {
+      const imagePath = `Boss/${i}.png`;
+      const bossImage = loadImage(imagePath);
+      this.imageList.push(bossImage);
+    }
+
+    // Set the initial image and position
+    this.image = this.imageList[this.imageIndex];
+    this.width = this.image.width;
+    this.height = this.image.height;
+    this.x = random(width - this.width); // Random initial X position
+    this.y = random(height - this.height); // Random initial Y position
+
+    // Define initial direction as right and down
+    this.directionX = 1;
+    this.directionY = 1;
+  }
+
+  update() {
+    // Update boss logic here
+    // Move the boss
+    this.x += this.velocityX * this.directionX;
+    this.y += this.velocityY * this.directionY;
+  
+    // Check for collision with background image boundaries and reverse direction
+    if (this.x <= 0 && this.directionX === -1) {
+      this.directionX = 1; // Reverse direction in the X-axis
+    }
+    if (this.x + this.image.width >= width && this.directionX === 1) {
+      this.directionX = -1; // Reverse direction in the X-axis
+    }
+  
+    if (this.y <= 0 && this.directionY === -1) {
+      this.directionY = 1; // Reverse direction in the Y-axis
+    }
+    if (this.y + this.image.height >= height && this.directionY === 1) {
+      this.directionY = -1; // Reverse direction in the Y-axis
+    }
+  
+    // Check for image change interval
+    const currentTime = millis();
+    if (currentTime - this.lastImageChangeTime >= this.imageChangeInterval) {
+      this.imageIndex = (this.imageIndex + 1) % this.imageList.length;
+      this.image = this.imageList[this.imageIndex];
+      this.lastImageChangeTime = currentTime;
+    }
+  }
+  
+
+  draw() {
+    // Draw the boss on the screen
+    image(this.image, this.x, this.y);
+
+    // Draw the boss's health bar
+    this.drawHealthBar();
+  }
+
+  drawHealthBar() {
+    // Calculate health bar dimensions
+    const barWidth = 200;
+    const barHeight = 20;
+
+    // Calculate health bar position
+    const barX = this.x + this.width / 2 - barWidth / 2;
+    const barY = this.y - 30;
+
+    // Calculate health bar fill based on health percentage
+    const fillWidth = (this.health / 1500) * barWidth;
+
+    // Draw the health bar outline
+    noFill();
+    stroke(255);
+    rect(barX, barY, barWidth, barHeight);
+
+    // Draw the filled portion of the health bar in red
+    fill(255, 0, 0);
+    rect(barX, barY, fillWidth, barHeight);
+  }
+}
+
+
+
+
+
+
+
+
+
+
 function generarEnemigos1() {
   let x = random(width - 100);
   let y = -100;
@@ -490,6 +607,14 @@ function generarEnemigos2() {
   }
 
   enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY));
+}
+
+function generarBoss() {
+  if (puntaje >= 1000 && !bossAppeared) {
+    // Crea una instancia del jefe
+    boss = new Boss();
+    bossAppeared = true; // Establece un indicador de que el jefe ha aparecido
+  }
 }
 
 function generarEnemigos() {
