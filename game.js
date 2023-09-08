@@ -28,6 +28,10 @@ let bossAppeared = false;
 let juegoEnCurso = false;
 let pantallaGameOver = false; 
 let aparecerEnemigosTipo2 = false;
+let perseguirEnemigos = false; // Variable global para controlar si los enemigos deben perseguir al jugador
+
+
+
 
 
 
@@ -142,15 +146,20 @@ function draw() {
 
     }  
 
-    if (!boss.aparecido && puntaje >= 1000) {
+    if (!boss.aparecido && puntaje >= 1500) {
       boss.aparecido = true; // Establece this.aparecido en true para que el jefe aparezca
-
-
-    
+        
     }
 
+    if (puntaje >= 1000) {
+      // Activa la persecución de enemigos
+      perseguirEnemigos = true;
+        }
+      
     
+     
 
+  
     // Generar enemigos solo si el juego no está en pausa
     if (!juegoEnPausa && millis() - tiempoUltimoEnemigo > tiempoGenerarEnemigo) {
       if (random(1) < 0.5) {
@@ -414,7 +423,7 @@ class Boss {
     this.intervaloCambioImagen = 100;
     this.tiempoCambioImagen = millis();
     this.health = 300;
-    this.apareceEnPuntaje = 1000;
+    this.apareceEnPuntaje = 1500;
     this.aparecido = false;
     this.explotando = false;
     this.explosionFrame = 0;
@@ -543,7 +552,7 @@ class Boss {
 
 
 class Enemigo {
-  constructor(imagenes, x, y, velocidadX, velocidadY) {
+  constructor(imagenes, x, y, velocidadX, velocidadY, tipo) {
     this.imagenes = imagenes;
     this.x = x;
     this.y = y;
@@ -557,6 +566,8 @@ class Enemigo {
     this.explotando = false;
     this.explosionFrame = 0;
     this.haColisionadoConJugador = false;
+    this.tipo = tipo;
+    this.perseguirJugador = false;
   }
 
   update() {
@@ -584,6 +595,19 @@ class Enemigo {
       }
       this.frame = (this.frame + 1) % this.imagenes.length;
     }
+
+    // Si el puntaje alcanza 1000 y el enemigo es de tipo 1, persigue al jugador
+    if (this.tipo === 1 && perseguirEnemigos) {
+      let distanciaX = jugador.x - this.x;
+      let distanciaY = jugador.y - this.y;
+      let distancia = sqrt(distanciaX * distanciaX + distanciaY * distanciaY);
+      let angulo = atan2(distanciaY, distanciaX);
+      let velocidadEnemigo = 2; // Ajusta la velocidad según sea necesario
+      let velocidadX = velocidadEnemigo * cos(angulo);
+      let velocidadY = velocidadEnemigo * sin(angulo);
+      this.x += velocidadX;
+      this.y += velocidadY;
+    }
   }
 
   show() {
@@ -603,8 +627,6 @@ class Enemigo {
       }
     }
   }
-
-  
 
   hits(jugador) {
     if (
@@ -652,14 +674,14 @@ class Enemigo {
 
 
 
-
 function generarEnemigos1() {
   let x = random(width - 100);
   let y = -100;
   let velocidadX = 0;
   let velocidadY = random(1, 5);
   let imagenes = marcianoImages;
-  enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY));
+  let tipo = 1; // Define el tipo de enemigo (1 para persecución)
+  enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY, tipo));
 }
 
 function generarEnemigos2() {
@@ -715,5 +737,6 @@ function resetGame() {
   pantallaGameOver = false; // Restablece la pantalla de Game Over
   juegoEnPausa = false; // Restablece el juego en pausa
   aparecerEnemigosTipo2 = false; // Asegúrate de restablecer esta variable
-  loop();
+  perseguirEnemigos = false; // Detiene la persecución de enemigos
+  loop(); // Reinicia el bucle principal del juego
 }
