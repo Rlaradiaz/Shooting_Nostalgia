@@ -375,6 +375,20 @@ class Jugador {
     );
     balas.push(bala);
     sonidoDisparo.play();
+    
+    if (puntaje < 1500) {
+      // Disparar solo una bala hacia arriba
+      let balaArriba = new Bala(this.x + this.ancho / 2, this.y, 0, -15);
+      balas.push(balaArriba);
+    } else {
+      // Disparar en las cuatro direcciones
+      let balaArriba = new Bala(this.x + this.ancho / 2, this.y, 0, -15);
+      let balaAbajo = new Bala(this.x + this.ancho / 2, this.y + this.alto, 0, 15);
+      let balaDerecha = new Bala(this.x + this.ancho, this.y + this.alto / 2, 15, 0);
+      let balaIzquierda = new Bala(this.x, this.y + this.alto / 2, -15, 0);
+
+      balas.push(balaArriba, balaAbajo, balaDerecha, balaIzquierda);
+    }
   }
 }
 
