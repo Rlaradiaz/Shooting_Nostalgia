@@ -78,17 +78,23 @@ function setup() {
   let fondoWidth = fondoImages[0].width;
   let fondoHeight = fondoImages[0].height;
 
+  
+
   // Crear el lienzo con el ancho de la imagen de fondo y la altura de la ventana
   createCanvas(fondoWidth, windowHeight);
 
   jugador = new Jugador(width / 2, height - 50);
   imagenBienvenida.resize(width, height);
+  boss = new Boss(bossImages, width / 2, -200, 0, 2);
+ 
+    
 }
 
 function windowResized() {
   // Ajustar el ancho del lienzo al ancho de la imagen de fondo
   let fondoWidth = fondoImages[0].width;
   resizeCanvas(fondoWidth, windowHeight);
+  
 }
 
 
@@ -117,6 +123,11 @@ function draw() {
     jugador.update();
     jugador.show();
 
+    if (!boss.aparecido && puntaje >= 500) {
+      boss.aparecido = true; // Establece this.aparecido en true para que el jefe aparezca
+    
+    }
+
     // Generar enemigos solo si el juego no está en pausa
     if (!juegoEnPausa && millis() - tiempoUltimoEnemigo > tiempoGenerarEnemigo) {
       if (random(1) < 0.5) {
@@ -133,15 +144,13 @@ function draw() {
       bala.update();
       bala.show();
 
-      // Variable para verificar si la bala colisionó con algún enemigo
-      let balaColisiono = false;
+      let balaColisionoConEnemigo = false; // Variable para rastrear si la bala colisionó con un enemigo
 
-      // Comprobar colisiones con enemigos
       for (let j = enemigos.length - 1; j >= 0; j--) {
         let enemigo = enemigos[j];
         if (bala.hits(enemigo)) {
           // Marcamos que la bala colisionó con un enemigo
-          balaColisiono = true;
+          balaColisionoConEnemigo = true;
 
           // Reducimos la vida del enemigo y activamos la explosión si es necesario
           if (enemigo.recibirDano(10)) {
@@ -150,10 +159,13 @@ function draw() {
 
           // Eliminamos la bala
           balas.splice(i, 1);
-
-          // No es necesario eliminar el enemigo aquí
-          // Ya que solo queremos eliminarlo una vez que explote
+          break; // Salimos del bucle interno una vez que la bala colisiona con un enemigo
         }
+      }
+
+      // Si la bala no colisionó con ningún enemigo y sale de la pantalla, eliminarla
+      if (!balaColisionoConEnemigo && bala.y < 0) {
+        balas.splice(i, 1);
       }
     }
 
@@ -175,17 +187,6 @@ function draw() {
         }
         break; // Romper el bucle si el jugador es golpeado
       }
-      if (puntaje >= 500 && !bossAppeared) {
-        // Create the boss
-        boss = new Boss();
-        bossAppeared = true; // Set a flag to indicate the boss has appeared
-      }
-  
-      // Update and display the boss if it exists
-      if (boss) {
-        boss.update();
-        boss.draw();
-      }  
     }
 
     // Mostrar puntaje y vida en el lado derecho
@@ -194,10 +195,11 @@ function draw() {
     textAlign(RIGHT);
     text(`Puntaje: ${puntaje}`, width - 10, 30);
     text(`Vida: ${vida}%`, width - 10, 60);
+
+    // Llama al método aparecer del jefe
+    boss.aparecer();
   }
 }
-
-
 
 function keyPressed() {
   if (pantallaBienvenida) {
@@ -205,16 +207,16 @@ function keyPressed() {
     musicaFondo.loop(); // Reproducir música al presionar una tecla y hacer que se repita
   } else {
     if (keyCode === LEFT_ARROW) {
-      jugador.moverIzquierda = true;
+      jugador.setMovimiento(-1, 0);
     } else if (keyCode === RIGHT_ARROW) {
-      jugador.moverDerecha = true;
+      jugador.setMovimiento(1, 0);
     } else if (keyCode === UP_ARROW) {
-      jugador.moverArriba = true;
+      jugador.setMovimiento(0, -1);
     } else if (keyCode === DOWN_ARROW) {
-      jugador.moverAbajo = true;
+      jugador.setMovimiento(0, 1);
     } else if (key === ' ' && !juegoEnPausa) {
-      balas.push(new Bala(jugador.x + jugador.ancho / 2, jugador.y));
-      sonidoDisparo.play();
+      // Disparar una bala cuando se presiona la tecla de espacio
+      jugador.disparar();
     } else if (key === 'p') {
       juegoEnPausa = !juegoEnPausa;
       if (juegoEnPausa) {
@@ -227,23 +229,16 @@ function keyPressed() {
         musicaFondo.play(); // Reanudar la música cuando el juego se reanuda
         loop();
       }
+    } else if (key === 'r') {
+      resetGame();
     }
   }
 }
 
-
-
 function keyReleased() {
-  if (keyCode === LEFT_ARROW) {
-    jugador.moverIzquierda = false;
-  } else if (keyCode === RIGHT_ARROW) {
-    jugador.moverDerecha = false;
-  } else if (keyCode === UP_ARROW) {
-    jugador.moverArriba = false;
-  } else if (keyCode === DOWN_ARROW) {
-    jugador.moverAbajo = false;
-  }
+  jugador.setMovimiento(0, 0);
 }
+
 function gameOver() {
   background(0);
   textSize(50);
@@ -255,27 +250,19 @@ function gameOver() {
   noLoop();
 }
 
-function resetGame() {
-  fondoY = 0;
-  puntaje = 0;
-  vida = 100;
-  tiempoUltimoEnemigo = millis();
-  enemigos = [];
-  balas = [];
-  jugador = new Jugador(width / 2, height - 50);
-  loop();
-}
 
 class Jugador {
-  constructor() {
+  constructor(x, y) {
     this.imagen = loadImage("Resized_Nave.png");
     this.ancho = 100;
     this.alto = 100;
-    this.x = width / 2;
-    this.y = height - 100;
+    this.x = x;
+    this.y = y;
     this.velocidadX = 0;
     this.velocidadY = 0;
     this.vida = 100;
+    this.ultimaDireccionX = 0;
+    this.ultimaDireccionY = -1; // Inicialmente apunta hacia arriba
   }
 
   update() {
@@ -284,14 +271,22 @@ class Jugador {
 
     if (keyIsDown(LEFT_ARROW)) {
       this.velocidadX = -5;
+      this.ultimaDireccionX = -1;
+      this.ultimaDireccionY = 0;
     } else if (keyIsDown(RIGHT_ARROW)) {
       this.velocidadX = 5;
+      this.ultimaDireccionX = 1;
+      this.ultimaDireccionY = 0;
     }
 
     if (keyIsDown(UP_ARROW)) {
       this.velocidadY = -5;
+      this.ultimaDireccionX = 0;
+      this.ultimaDireccionY = -1;
     } else if (keyIsDown(DOWN_ARROW)) {
       this.velocidadY = 5;
+      this.ultimaDireccionX = 0;
+      this.ultimaDireccionY = 1;
     }
 
     this.x += this.velocidadX;
@@ -305,23 +300,34 @@ class Jugador {
     image(this.imagen, this.x, this.y, this.ancho, this.alto);
   }
 
-
   setMovimiento(x, y) {
     if (x === 0 && y === 0) {
       // Si no se presiona ninguna tecla de movimiento, establecer movimiento a cero
-      this.movimientoX = 0;
-      this.movimientoY = 0;
+      this.velocidadX = 0;
+      this.velocidadY = 0;
     } else {
-      this.movimientoX = x;
-      this.movimientoY = y;
+      this.velocidadX = x;
+      this.velocidadY = y;
     }
-  }  
+  }
 
   recibirDano(dano) {
-    this.vida -= dano; // Reducir la vida del jugador en la cantidad especificada.
+    this.vida -= dano;
     if (this.vida <= 0) {
-      gameOver(); // Llamar a la función de Game Over cuando la vida del jugador llega a 0 o menos.
+      gameOver();
     }
+  }
+
+  disparar() {
+    // Crea una nueva bala en la última dirección de movimiento
+    let bala = new Bala(
+      this.x + this.ancho / 2,
+      this.y,
+      this.ultimaDireccionX,
+      this.ultimaDireccionY
+    );
+    balas.push(bala);
+    sonidoDisparo.play();
   }
 }
 
@@ -332,6 +338,7 @@ class Bala {
     this.velY = -10;
     this.ancho = 10;
     this.alto = 20;
+    this.danio = 10;
   }
 
   update() {
@@ -346,13 +353,155 @@ class Bala {
 
   hits(enemigo) {
     return (
-      this.x > enemigo.x &&
-      this.x < enemigo.x + enemigo.ancho &&
+      this.x + this.ancho / 2 > enemigo.x &&
+      this.x + this.ancho / 2 < enemigo.x + enemigo.ancho &&
       this.y > enemigo.y &&
       this.y < enemigo.y + enemigo.alto
     );
   }
+   
 }
+class Boss {
+  constructor(imagenes) {
+    this.imagenes = imagenes;
+    this.x = width / 2 - 100; // Inicia en el centro de la pantalla
+    this.y = -200; // Fuera de la pantalla arriba
+    this.ancho = 400;
+    this.alto = 400;
+    this.velocidadX = 2;
+    this.velocidadY = 1;
+    this.directionX = -1;
+    this.directionY = 1;
+    this.imageIndex = 0;
+    this.intervaloCambioImagen = 100;
+    this.tiempoCambioImagen = millis();
+    this.health = 300;
+    this.apareceEnPuntaje = 500;
+    this.aparecido = false;
+    this.explotando = false;
+    this.explosionFrame = 0;
+    this.haColisionadoConJugador = false;
+  }
+
+  update() {
+    if (this.explotando) {
+      this.explosionFrame++;
+      if (this.explosionFrame >= explosionImages.length) {
+        // Eliminar al jefe de la lista cuando la explosión ha terminado
+        let index = enemigos.indexOf(this);
+        if (index !== -1) {
+          enemigos.splice(index, 1);
+        }
+      }
+    } else if (this.vida <= 0) {
+      // Si el jefe no está explotando y su vida llega a 0 o menos, activar la explosión
+      this.activarExplosion();
+    } else {
+      // Mover el jefe horizontalmente según su dirección actual
+      this.x += this.velocidadX * this.directionX;
+
+      // Cambiar la dirección horizontal si toca los límites de la pantalla
+      if (this.x <= 0 && this.directionX === -1) {
+        this.directionX = 1;
+      }
+      if (this.x + this.ancho >= width && this.directionX === 1) {
+        this.directionX = -1;
+      }
+
+      // Mover el jefe verticalmente según su dirección actual
+      this.y += this.velocidadY * this.directionY;
+
+      // Cambiar la dirección vertical si toca los límites de la pantalla
+      if (this.y <= 0 && this.directionY === -1) {
+        this.directionY = 1;
+      }
+      if (this.y + this.alto >= height && this.directionY === 1) {
+        this.directionY = -1;
+      }
+
+      // Controlar el cambio de imagen a una velocidad más lenta
+      let tiempoActual = millis();
+      if (tiempoActual - this.tiempoCambioImagen >= this.intervaloCambioImagen) {
+        this.imageIndex = (this.imageIndex + 1) % this.imagenes.length;
+        this.tiempoCambioImagen = tiempoActual;
+      }
+    }
+  }
+
+  show() {
+    if (this.explotando) {
+      if (explosionImages[this.explosionFrame]) {
+        image(explosionImages[this.explosionFrame], this.x, this.y, this.ancho, this.alto);
+      } else {
+        console.log(`Imagen de explosión ${this.explosionFrame} no definida.`);
+        logError(`Imagen de explosión ${this.explosionFrame} no definida.`);
+      }
+    } else {
+      if (this.imagenes[this.imageIndex]) {
+        image(this.imagenes[this.imageIndex], this.x, this.y, this.ancho, this.alto);
+      } else {
+        console.log(`Imagen ${this.imageIndex} no definida.`);
+        logError(`Imagen ${this.imageIndex} no definida.`);
+      }
+    }
+  }
+
+  hits(jugador) {
+    if (
+      this.x < jugador.x + jugador.ancho &&
+      this.x + this.ancho > jugador.x &&
+      this.y < jugador.y + jugador.alto &&
+      this.y + this.alto > jugador.y
+    ) {
+      if (!this.explotando && !this.haColisionadoConJugador) {
+        jugador.recibirDano(20);
+        this.haColisionadoConJugador = true;
+      }
+      if (!this.explotando) {
+        this.activarExplosion();
+      }
+      return true;
+    }
+    return false;
+  }
+
+  recibirDano(dano) {
+    this.vida -= dano;
+    if (this.vida <= 0 && !this.explotando) {
+      this.activarExplosion();
+      return true;
+    }
+    return false;
+  }
+
+  estaMuerto() {
+    return this.vida <= 0;
+  }
+
+  activarExplosion() {
+    this.explotando = true;
+    this.explosionFrame = 0;
+    sonidoExplosion.play();
+    puntaje += this.puntos;
+  }
+
+  estaExplotando() {
+    return this.explotando && this.explosionFrame < explosionImages.length;
+  }
+
+  aparecer() {
+    // Comprobar si el jefe ha aparecido
+    if (!this.aparecido && puntaje >= this.apareceEnPuntaje) {
+      // Ajustar la posición inicial del jefe
+      this.x = width / 2 - this.ancho / 2;
+      this.y = -this.alto;
+      this.aparecido = true;
+      enemigos.push(this); // Agregar al jefe a la lista de enemigos
+    }
+  }
+}
+
+
 
 class Enemigo {
   constructor(imagenes, x, y, velocidadX, velocidadY) {
@@ -368,6 +517,7 @@ class Enemigo {
     this.vida = 10;
     this.explotando = false;
     this.explosionFrame = 0;
+    this.haColisionadoConJugador = false;
   }
 
   update() {
@@ -397,22 +547,6 @@ class Enemigo {
     }
   }
 
-
-  
-
-  show() {
-    console.log("this.imagenes:", this.imagenes);
-    console.log("this.frame:", this.frame);
-    console.log("this.explosionFrame:", this.explosionFrame);
-
-    if (this.explotando) {
-      image(explosionImages[this.explosionFrame], this.x, this.y, this.ancho, this.alto);
-    } else {
-      image(this.imagenes[this.frame], this.x, this.y, this.ancho, this.alto);
-    }
-  }
-
-
   show() {
     if (this.explotando) {
       if (explosionImages[this.explosionFrame]) {
@@ -430,6 +564,7 @@ class Enemigo {
       }
     }
   }
+
   
 
   hits(jugador) {
@@ -440,18 +575,16 @@ class Enemigo {
       this.y + this.alto > jugador.y
     ) {
       if (!this.explotando && !this.haColisionadoConJugador) {
-        jugador.recibirDano(20); // Disminuir la vida del jugador en 20.
-        this.haColisionadoConJugador = true; // Marcar que ya ha colisionado con el jugador
+        jugador.recibirDano(20);
+        this.haColisionadoConJugador = true;
       }
       if (!this.explotando) {
-        this.activarExplosion(); // Activar la explosión del enemigo si aún no lo está.
+        this.activarExplosion();
       }
       return true;
     }
     return false;
   }
-  
-  
 
   recibirDano(dano) {
     this.vida -= dano;
@@ -477,105 +610,6 @@ class Enemigo {
     return this.explotando && this.explosionFrame < explosionImages.length;
   }
 }
-
-
-class Boss {
-  constructor() {
-    this.imageList = [];
-    this.imageIndex = 0;
-    this.image = null;
-    this.health = 1500;
-    this.velocityX = 0.3;
-    this.velocityY = 0.3;
-    this.imageChangeInterval = 100;
-    this.lastImageChangeTime = 0;
-
-    // Load boss images
-    for (let i = 1; i <= 6; i++) {
-      const imagePath = `Boss/${i}.png`;
-      const bossImage = loadImage(imagePath);
-      this.imageList.push(bossImage);
-    }
-
-    // Set the initial image and position
-    this.image = this.imageList[this.imageIndex];
-    this.width = this.image.width;
-    this.height = this.image.height;
-    this.x = random(width - this.width); // Random initial X position
-    this.y = random(height - this.height); // Random initial Y position
-
-    // Define initial direction as right and down
-    this.directionX = 1;
-    this.directionY = 1;
-  }
-
-  update() {
-    // Update boss logic here
-    // Move the boss
-    this.x += this.velocityX * this.directionX;
-    this.y += this.velocityY * this.directionY;
-  
-    // Check for collision with background image boundaries and reverse direction
-    if (this.x <= 0 && this.directionX === -1) {
-      this.directionX = 1; // Reverse direction in the X-axis
-    }
-    if (this.x + this.image.width >= width && this.directionX === 1) {
-      this.directionX = -1; // Reverse direction in the X-axis
-    }
-  
-    if (this.y <= 0 && this.directionY === -1) {
-      this.directionY = 1; // Reverse direction in the Y-axis
-    }
-    if (this.y + this.image.height >= height && this.directionY === 1) {
-      this.directionY = -1; // Reverse direction in the Y-axis
-    }
-  
-    // Check for image change interval
-    const currentTime = millis();
-    if (currentTime - this.lastImageChangeTime >= this.imageChangeInterval) {
-      this.imageIndex = (this.imageIndex + 1) % this.imageList.length;
-      this.image = this.imageList[this.imageIndex];
-      this.lastImageChangeTime = currentTime;
-    }
-  }
-  
-
-  draw() {
-    // Draw the boss on the screen
-    image(this.image, this.x, this.y);
-
-    // Draw the boss's health bar
-    this.drawHealthBar();
-  }
-
-  drawHealthBar() {
-    // Calculate health bar dimensions
-    const barWidth = 200;
-    const barHeight = 20;
-
-    // Calculate health bar position
-    const barX = this.x + this.width / 2 - barWidth / 2;
-    const barY = this.y - 30;
-
-    // Calculate health bar fill based on health percentage
-    const fillWidth = (this.health / 1500) * barWidth;
-
-    // Draw the health bar outline
-    noFill();
-    stroke(255);
-    rect(barX, barY, barWidth, barHeight);
-
-    // Draw the filled portion of the health bar in red
-    fill(255, 0, 0);
-    rect(barX, barY, fillWidth, barHeight);
-  }
-}
-
-
-
-
-
-
 
 
 
@@ -609,13 +643,7 @@ function generarEnemigos2() {
   enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY));
 }
 
-function generarBoss() {
-  if (puntaje >= 1000 && !bossAppeared) {
-    // Crea una instancia del jefe
-    boss = new Boss();
-    bossAppeared = true; // Establece un indicador de que el jefe ha aparecido
-  }
-}
+
 
 function generarEnemigos() {
   if (!juegoEnPausa) {
@@ -629,39 +657,7 @@ function generarEnemigos() {
 
 setInterval(generarEnemigos, tiempoGenerarEnemigo);
 
-function keyPressed() {
-  if (pantallaBienvenida) {
-    pantallaBienvenida = false;
-    musicaFondo.loop(); // Reproducir música al presionar una tecla y hacer que se repita
-  } else {
-    if (keyCode === LEFT_ARROW) {
-      jugador.setMovimiento(-5, 0);
-    } else if (keyCode === RIGHT_ARROW) {
-      jugador.setMovimiento(5, 0);
-    } else if (keyCode === UP_ARROW) {
-      jugador.setMovimiento(0, -5);
-    } else if (keyCode === DOWN_ARROW) {
-      jugador.setMovimiento(0, 5);
-    } else if (key === ' ' && !juegoEnPausa) {
-      balas.push(new Bala(jugador.x + jugador.ancho / 2, jugador.y));
-      sonidoDisparo.play();
-    } else if (key === 'p') {
-      juegoEnPausa = !juegoEnPausa;
-      if (juegoEnPausa) {
-        tiempoPausa = millis();
-        musicaFondo.pause(); // Pausar la música cuando el juego está en pausa
-        noLoop();
-      } else {
-        let tiempoPausado = millis() - tiempoPausa;
-        tiempoUltimoEnemigo += tiempoPausado; // Añadir el tiempo pausado al tiempo de generación de enemigos
-        musicaFondo.play(); // Reanudar la música cuando el juego se reanuda
-        loop();
-      }
-    } else if (key === 'r') {
-      resetGame();
-    }
-  }
-}
+
 
 function resetGame() {
   fondoY = 0;
@@ -671,5 +667,7 @@ function resetGame() {
   enemigos = [];
   balas = [];
   jugador = new Jugador(width / 2, height - 50);
-  loop();
+  boss.aparecido = false; // Restablece this.aparecido para permitir que el jefe aparezca nuevamente
+  loop(); // Reiniciar el bucle del juego
+  
 }
