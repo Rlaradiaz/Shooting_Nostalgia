@@ -29,6 +29,7 @@ let juegoEnCurso = false;
 let pantallaGameOver = false; 
 let aparecerEnemigosTipo2 = false;
 let perseguirEnemigos = false; // Variable global para controlar si los enemigos deben perseguir al jugador
+let derrotoAlBoss = false;
 
 
 
@@ -149,6 +150,10 @@ function draw() {
     if (!boss.aparecido && puntaje >= 2000) {
       boss.aparecido = true; // Establece this.aparecido en true para que el jefe aparezca
         
+    }
+    if (boss.vida <= 0 && !derrotoAlBoss) {
+      derrotoAlBoss = true;
+      puntaje += 200; // Suma 200 puntos al puntaje del jugador
     }
 
     if (puntaje >= 1000) {
@@ -457,9 +462,10 @@ class Boss {
     this.directionX = -1;
     this.directionY = 1;
     this.imageIndex = 0;
+    this.puntos = 200;
     this.intervaloCambioImagen = 100;
     this.tiempoCambioImagen = millis();
-    this.health = 300;
+    this.vida = 1500;
     this.apareceEnPuntaje = 2000;
     this.aparecido = false;
     this.explotando = false;
@@ -770,10 +776,23 @@ function resetGame() {
   boss.aparecido = false;
   boss.explotando = false;
   boss.explosionFrame = 0;
+  derrotoAlBoss = false;
   boss.haColisionadoConJugador = false;
   pantallaGameOver = false; // Restablece la pantalla de Game Over
   juegoEnPausa = false; // Restablece el juego en pausa
   aparecerEnemigosTipo2 = false; // Asegúrate de restablecer esta variable
   perseguirEnemigos = false; // Detiene la persecución de enemigos
+  boss = new Boss(bossImages, width / 2, -200, 0, 2);
+  
+  // Asegúrate de que el jefe siempre aparezca al reiniciar el juego
+  boss.apareceEnPuntaje = 2000;
+  
+  // Detener la música actual y luego volver a reproducirla desde el principio
+  if (musicaFondo.isPlaying()) {
+    musicaFondo.stop();
+  }
+  musicaFondo.play();
+
   loop(); // Reinicia el bucle principal del juego
 }
+
