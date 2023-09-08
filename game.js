@@ -147,7 +147,7 @@ function draw() {
 
     }  
 
-    if (!boss.aparecido && puntaje >= 2000) {
+    if (!boss.aparecido && puntaje >= 4000) {
       boss.aparecido = true; // Establece this.aparecido en true para que el jefe aparezca
         
     }
@@ -156,7 +156,7 @@ function draw() {
       puntaje += 200; // Suma 200 puntos al puntaje del jugador
     }
 
-    if (puntaje >= 1000) {
+    if (puntaje >= 1300) {
       // Activa la persecución de enemigos
       perseguirEnemigos = true;
         }
@@ -373,7 +373,7 @@ class Jugador {
     console.log("Disparar");
     sonidoDisparo.play();
 
-    if (puntaje < 1500) {
+    if (puntaje < 2500) {
       // Disparar solo una bala hacia arriba
       let bala = new Bala(
         this.x + this.ancho / 2,
@@ -465,8 +465,8 @@ class Boss {
     this.puntos = 200;
     this.intervaloCambioImagen = 100;
     this.tiempoCambioImagen = millis();
-    this.vida = 1500;
-    this.apareceEnPuntaje = 2000;
+    this.vida = 2000;
+    this.apareceEnPuntaje = 4000;
     this.aparecido = false;
     this.explotando = false;
     this.explosionFrame = 0;
@@ -785,7 +785,7 @@ function resetGame() {
   boss = new Boss(bossImages, width / 2, -200, 0, 2);
   
   // Asegúrate de que el jefe siempre aparezca al reiniciar el juego
-  boss.apareceEnPuntaje = 2000;
+  boss.apareceEnPuntaje = 4000;
   
   // Detener la música actual y luego volver a reproducirla desde el principio
   if (musicaFondo.isPlaying()) {
