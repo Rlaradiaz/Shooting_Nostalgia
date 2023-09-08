@@ -25,6 +25,8 @@ let fondoSiguiente = 1;
 let transicion = 0;
 let boss = null; // Variable para el jefe
 let bossAppeared = false;
+let juegoEnCurso = false;
+let pantallaGameOver = false; 
 
 
 
@@ -208,36 +210,48 @@ function draw() {
 function keyPressed() {
   if (pantallaBienvenida) {
     pantallaBienvenida = false;
-    musicaFondo.loop(); // Reproducir música al presionar una tecla y hacer que se repita
+    musicaFondo.loop();
   } else {
-    if (keyCode === LEFT_ARROW) {
-      jugador.setMovimiento(-1, 0);
-    } else if (keyCode === RIGHT_ARROW) {
-      jugador.setMovimiento(1, 0);
-    } else if (keyCode === UP_ARROW) {
-      jugador.setMovimiento(0, -1);
-    } else if (keyCode === DOWN_ARROW) {
-      jugador.setMovimiento(0, 1);
-    } else if (key === ' ' && !juegoEnPausa) {
-      // Disparar una bala cuando se presiona la tecla de espacio
-      jugador.disparar();
-    } else if (key === 'p') {
-      juegoEnPausa = !juegoEnPausa;
-      if (juegoEnPausa) {
-        tiempoPausa = millis();
-        musicaFondo.pause(); // Pausar la música cuando el juego está en pausa
-        noLoop();
+    if (!pantallaGameOver) { // Solo manejar las teclas si no estás en la pantalla de Game Over
+      if (key === ' ') {
+        jugador.disparar();
       } else {
-        let tiempoPausado = millis() - tiempoPausa;
-        tiempoUltimoEnemigo += tiempoPausado; // Añadir el tiempo pausado al tiempo de generación de enemigos
-        musicaFondo.play(); // Reanudar la música cuando el juego se reanuda
-        loop();
+        if (key === 'p') {
+          if (juegoEnPausa) {
+            let tiempoPausado = millis() - tiempoPausa;
+            tiempoUltimoEnemigo += tiempoPausado;
+            musicaFondo.play();
+            loop();
+          } else {
+            tiempoPausa = millis();
+            musicaFondo.pause();
+            noLoop();
+          }
+          juegoEnPausa = !juegoEnPausa;
+        } else {
+          let movimientoX = 0;
+          let movimientoY = 0;
+
+          if (keyCode === LEFT_ARROW) {
+            movimientoX = -1;
+          } else if (keyCode === RIGHT_ARROW) {
+            movimientoX = 1;
+          } else if (keyCode === UP_ARROW) {
+            movimientoY = -1;
+          } else if (keyCode === DOWN_ARROW) {
+            movimientoY = 1;
+          }
+
+          jugador.setMovimiento(movimientoX, movimientoY);
+        }
       }
-    } else if (key === 'r') {
+    } else if (key === 'r') { // Si estás en la pantalla de Game Over, presionar 'R' para reiniciar
       resetGame();
     }
   }
 }
+
+
 
 function keyReleased() {
   jugador.setMovimiento(0, 0);
@@ -252,6 +266,7 @@ function gameOver() {
   textSize(32);
   text("Presiona 'R' para volver a intentar", width / 2, height / 2 + 50);
   noLoop();
+  pantallaGameOver = true; // Estás en la pantalla de Game Over
 }
 
 
@@ -671,7 +686,12 @@ function resetGame() {
   enemigos = [];
   balas = [];
   jugador = new Jugador(width / 2, height - 50);
-  boss.aparecido = false; // Restablece this.aparecido para permitir que el jefe aparezca nuevamente
-  loop(); // Reiniciar el bucle del juego
-  
+  boss.aparecido = false;
+  boss.explotando = false;
+  boss.explosionFrame = 0;
+  boss.haColisionadoConJugador = false;
+  pantallaGameOver = false; // Restablece la pantalla de Game Over
+  juegoEnPausa = false; // Restablece el juego en pausa
+  loop();
 }
+
