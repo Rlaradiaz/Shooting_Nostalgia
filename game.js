@@ -694,4 +694,3 @@ function resetGame() {
   juegoEnPausa = false; // Restablece el juego en pausa
   loop();
 }
-
