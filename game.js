@@ -146,7 +146,7 @@ function draw() {
 
     }  
 
-    if (!boss.aparecido && puntaje >= 1500) {
+    if (!boss.aparecido && puntaje >= 2000) {
       boss.aparecido = true; // Establece this.aparecido en true para que el jefe aparezca
         
     }
@@ -460,7 +460,7 @@ class Boss {
     this.intervaloCambioImagen = 100;
     this.tiempoCambioImagen = millis();
     this.health = 300;
-    this.apareceEnPuntaje = 1500;
+    this.apareceEnPuntaje = 2000;
     this.aparecido = false;
     this.explotando = false;
     this.explosionFrame = 0;
