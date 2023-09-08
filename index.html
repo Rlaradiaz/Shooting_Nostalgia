@@ -36,5 +36,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.js"></script>
     <script src="game.js"></script>
+    <script>
+        // Función para crear el canvas del juego y ajustar su tamaño al del contenedor
+        function createCanvasAndResize() {
+            let gameContainer = document.getElementById("game-container");
+            let canvas = createCanvas(gameContainer.offsetWidth, gameContainer.offsetHeight);
+            canvas.parent("game-container");
+        }
+    
+        // Llamar a la función cuando se cargue la página y cuando cambie su tamaño
+        window.addEventListener("load", createCanvasAndResize);
+        window.addEventListener("resize", createCanvasAndResize);
+    
+        // Iniciar el contexto de audio al cargar la página
+        function startGame() {
+            getAudioContext().resume();
+            setup();
+        }
+    
+        startGame();
+    </script>
+    
 </body>
 </html>

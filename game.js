@@ -365,27 +365,24 @@ class Jugador {
   }
 
   disparar() {
-    console.log("Disparar"); // Agrega esta línea para mostrar el log
-    // Siempre crea una nueva bala en la dirección hacia arriba
-    let bala = new Bala(
-      this.x + this.ancho / 2,
-      this.y,
-      0,
-      -1 // La dirección Y es siempre hacia arriba (negativa)
-    );
-    balas.push(bala);
+    console.log("Disparar");
     sonidoDisparo.play();
-    
+
     if (puntaje < 1500) {
       // Disparar solo una bala hacia arriba
-      let balaArriba = new Bala(this.x + this.ancho / 2, this.y, 0, -15);
-      balas.push(balaArriba);
+      let bala = new Bala(
+        this.x + this.ancho / 2,
+        this.y,
+        0,
+        -1 // La dirección Y es siempre hacia arriba (negativa)
+      );
+      balas.push(bala);
     } else {
-      // Disparar en las cuatro direcciones
-      let balaArriba = new Bala(this.x + this.ancho / 2, this.y, 0, -15);
-      let balaAbajo = new Bala(this.x + this.ancho / 2, this.y + this.alto, 0, 15);
-      let balaDerecha = new Bala(this.x + this.ancho, this.y + this.alto / 2, 15, 0);
-      let balaIzquierda = new Bala(this.x, this.y + this.alto / 2, -15, 0);
+      // Disparar en las cuatro direcciones con imágenes diferentes
+      let balaArriba = new Bala(this.x + this.ancho / 2, this.y, 0, -1, "arriba");
+      let balaAbajo = new Bala(this.x + this.ancho / 2, this.y + this.alto, 0, 1, "abajo");
+      let balaDerecha = new Bala(this.x + this.ancho, this.y + this.alto / 2, 1, 0, "derecha");
+      let balaIzquierda = new Bala(this.x, this.y + this.alto / 2, -1, 0, "izquierda");
 
       balas.push(balaArriba, balaAbajo, balaDerecha, balaIzquierda);
     }
@@ -393,23 +390,49 @@ class Jugador {
 }
 
 class Bala {
-  constructor(x, y) {
+  constructor(x, y, direccionX, direccionY, direccion) {
     this.x = x;
     this.y = y;
-    this.velY = -10;
-    this.ancho = 10;
-    this.alto = 20;
+    this.velY = direccionY * 10; // Velocidad ajustada
+    this.velX = direccionX * 10; // Velocidad ajustada
+    this.ancho = direccion ? 80 : 10; // Ancho personalizado si tiene dirección
+    this.alto = direccion ? 80 : 20; // Alto personalizado si tiene dirección
     this.danio = 10;
+    
+    if (direccion) {
+      this.cargarImagen(direccion);
+    }
+  }
+
+  cargarImagen(direccion) {
+    if (direccion === "arriba") {
+      this.imagen = loadImage("imagenes/Arriba.png");
+    } else if (direccion === "abajo") {
+      this.imagen = loadImage("imagenes/Abajo.png");
+    } else if (direccion === "derecha") {
+      this.imagen = loadImage("imagenes/Derecha.png");
+    } else if (direccion === "izquierda") {
+      this.imagen = loadImage("imagenes/Izquierda.png");
+    }
+  }
+  show() {
+    image(this.imagen, this.x, this.y, this.ancho, this.alto); // Escala la imagen al ancho y alto personalizados
   }
 
   update() {
+    this.x += this.velX;
     this.y += this.velY;
   }
 
   show() {
-    fill(255, 0, 0);
-    noStroke();
-    rect(this.x, this.y, this.ancho, this.alto);
+    if (this.imagen) {
+      image(this.imagen, this.x, this.y, this.ancho, this.alto);
+    } else {
+      // Dibuja una forma predeterminada si la imagen no está cargada
+      fill(255, 0, 0);
+      noStroke();
+      rect(this.x, this.y, this.ancho, this.alto);
+    }
   }
 
   hits(enemigo) {
@@ -420,8 +443,8 @@ class Bala {
       this.y < enemigo.y + enemigo.alto
     );
   }
-   
 }
+
 class Boss {
   constructor(imagenes) {
     this.imagenes = imagenes;
