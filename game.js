@@ -27,6 +27,8 @@ let boss = null; // Variable para el jefe
 let bossAppeared = false;
 let juegoEnCurso = false;
 let pantallaGameOver = false; 
+let aparecerEnemigosTipo2 = false;
+
 
 
 
@@ -86,12 +88,18 @@ function setup() {
 
   
 
+  
+
   // Crear el lienzo con el ancho de la imagen de fondo y la altura de la ventana
   createCanvas(fondoWidth, windowHeight);
+
+  
 
   jugador = new Jugador(width / 2, height - 50);
   imagenBienvenida.resize(width, height);
   boss = new Boss(bossImages, width / 2, -200, 0, 2);
+
+ 
  
     
 }
@@ -129,10 +137,19 @@ function draw() {
     jugador.update();
     jugador.show();
 
-    if (!boss.aparecido && puntaje >= 500) {
+    if (puntaje >= 500 && !aparecerEnemigosTipo2) {
+      aparecerEnemigosTipo2 = true;
+
+    }  
+
+    if (!boss.aparecido && puntaje >= 1000) {
       boss.aparecido = true; // Establece this.aparecido en true para que el jefe aparezca
+
+
     
     }
+
+    
 
     // Generar enemigos solo si el juego no está en pausa
     if (!juegoEnPausa && millis() - tiempoUltimoEnemigo > tiempoGenerarEnemigo) {
@@ -214,6 +231,7 @@ function keyPressed() {
   } else {
     if (!pantallaGameOver) { // Solo manejar las teclas si no estás en la pantalla de Game Over
       if (key === ' ') {
+        console.log("Key pressed: Espacio"); // Agrega esta línea para mostrar el log
         jugador.disparar();
       } else {
         if (key === 'p') {
@@ -287,7 +305,7 @@ class Jugador {
   update() {
     this.velocidadX = 0;
     this.velocidadY = 0;
-
+    
     if (keyIsDown(LEFT_ARROW)) {
       this.velocidadX = -5;
       this.ultimaDireccionX = -1;
@@ -338,6 +356,7 @@ class Jugador {
   }
 
   disparar() {
+    console.log("Disparar"); // Agrega esta línea para mostrar el log
     // Siempre crea una nueva bala en la dirección hacia arriba
     let bala = new Bala(
       this.x + this.ancho / 2,
@@ -395,11 +414,12 @@ class Boss {
     this.intervaloCambioImagen = 100;
     this.tiempoCambioImagen = millis();
     this.health = 300;
-    this.apareceEnPuntaje = 500;
+    this.apareceEnPuntaje = 1000;
     this.aparecido = false;
     this.explotando = false;
     this.explosionFrame = 0;
     this.haColisionadoConJugador = false;
+    
   }
 
   update() {
@@ -643,23 +663,25 @@ function generarEnemigos1() {
 }
 
 function generarEnemigos2() {
-  let x, y, velocidadX, velocidadY, imagenes;
+  if (aparecerEnemigosTipo2) {
+    let x, y, velocidadX, velocidadY, imagenes;
 
-  if (random(1) < 0.5) {
-    x = -100;
-    y = random(height - 100);
-    velocidadX = random(1, 5);
-    velocidadY = 0;
-    imagenes = helicopter1Images;
-  } else {
-    x = width;
-    y = random(height - 100);
-    velocidadX = -random(1, 5);
-    velocidadY = 0;
-    imagenes = helicopterImages;
+    if (random(1) < 0.5) {
+      x = -100;
+      y = random(height - 100);
+      velocidadX = random(1, 5);
+      velocidadY = 0;
+      imagenes = helicopter1Images;
+    } else {
+      x = width;
+      y = random(height - 100);
+      velocidadX = -random(1, 5);
+      velocidadY = 0;
+      imagenes = helicopterImages;
+    }
+
+    enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY));
   }
-
-  enemigos.push(new Enemigo(imagenes, x, y, velocidadX, velocidadY));
 }
 
 
@@ -692,5 +714,6 @@ function resetGame() {
   boss.haColisionadoConJugador = false;
   pantallaGameOver = false; // Restablece la pantalla de Game Over
   juegoEnPausa = false; // Restablece el juego en pausa
+  aparecerEnemigosTipo2 = false; // Asegúrate de restablecer esta variable
   loop();
 }
