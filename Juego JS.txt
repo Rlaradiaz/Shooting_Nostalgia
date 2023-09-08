@@ -25,7 +25,6 @@ let fondoSiguiente = 1;
 let transicion = 0;
 let boss = null; // Variable para el jefe
 let bossAppeared = false;
-let tiempoUltimoDisparo = 0;
 
 
 
@@ -128,6 +127,7 @@ function draw() {
 
     if (!boss.aparecido && puntaje >= 500) {
       boss.aparecido = true; // Establece this.aparecido en true para que el jefe aparezca
+    
     }
 
     // Generar enemigos solo si el juego no está en pausa
@@ -140,24 +140,11 @@ function draw() {
       tiempoUltimoEnemigo = millis();
     }
 
-    // Disparar automáticamente sin necesidad de presionar una tecla
-    if (!pantallaBienvenida && !juegoEnPausa) {
-      // Ajusta el tiempo mínimo entre disparos aquí (por ejemplo, 500 milisegundos)
-      let tiempoEntreDisparos = 500;
-
-      // Verifica si ha pasado suficiente tiempo desde el último disparo
-      if (millis() - tiempoUltimoDisparo >= tiempoEntreDisparos) {
-        jugador.disparar();
-        tiempoUltimoDisparo = millis(); // Actualiza el tiempo del último disparo
-      }
-    }
-
     // Actualizar y mostrar balas
     for (let i = balas.length - 1; i >= 0; i--) {
       let bala = balas[i];
       bala.update();
       bala.show();
-
 
       let balaColisionoConEnemigo = false; // Variable para rastrear si la bala colisionó con un enemigo
 
@@ -686,3 +673,4 @@ function resetGame() {
   loop(); // Reiniciar el bucle del juego
   
 }
+
