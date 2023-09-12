@@ -34,7 +34,14 @@ let derrotoAlBoss = false;
 
 
 
+window.onload = function () {
+  // Ocultar la imagen
+  let catImage = document.getElementById("cat-image");
+  catImage.style.display = "none";
 
+  // Luego, inicia el juego
+  startGame();
+};
 
 
 function logError(message) {
