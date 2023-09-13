@@ -24,6 +24,12 @@
             overflow: hidden;
         }
 
+        #cat-image {
+            max-width: 100%; /* Asegura que la imagen se ajuste al contenedor */
+            max-height: 100%;
+            object-fit: contain; /* Mantiene la proporción de la imagen */
+        }
+
         canvas {
             display: block;
         }
@@ -31,8 +37,9 @@
 </head>
 <body>
     <div id="game-container">
+        <img id="cat-image" src="loading.png" alt="Imagen de gato">
         <!-- Aquí se mostrará el canvas del juego -->
-    </div><img id="cat-image" src="loading.png" alt="Imagen de gato">
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.js"></script>
@@ -49,13 +56,26 @@
         window.addEventListener("load", createCanvasAndResize);
         window.addEventListener("resize", createCanvasAndResize);
     
+        // Función para ocultar la imagen del gato y comenzar el juego después de 3 segundos
+        function startGameAfterDelay() {
+            let catImage = document.getElementById("cat-image");
+            catImage.style.display = "block"; // Mostrar la imagen
+    
+            setTimeout(function() {
+                catImage.style.display = "none"; // Ocultar la imagen después de 3 segundos
+                startGame();
+            }, 2000); // 3000 milisegundos = 3 segundos
+        }
+    
         // Iniciar el contexto de audio al cargar la página
         function startGame() {
             getAudioContext().resume();
             setup();
         }
     
-        startGame();
+        // Llamar a startGameAfterDelay después de cargar la página
+        window.addEventListener("load", startGameAfterDelay);
+    
     </script>
     
 </body>
