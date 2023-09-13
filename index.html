@@ -51,31 +51,26 @@
             let canvas = createCanvas(gameContainer.offsetWidth, gameContainer.offsetHeight);
             canvas.parent("game-container");
         }
-    
-        // Llamar a la función cuando se cargue la página y cuando cambie su tamaño
-        window.addEventListener("load", createCanvasAndResize);
-        window.addEventListener("resize", createCanvasAndResize);
-    
-        // Función para ocultar la imagen del gato y comenzar el juego después de 3 segundos
-        function startGameAfterDelay() {
+
+        // Función para ocultar la imagen del gato cuando el juego se ha cargado
+        function hideCatImage() {
             let catImage = document.getElementById("cat-image");
-            catImage.style.display = "block"; // Mostrar la imagen
-    
-            setTimeout(function() {
-                catImage.style.display = "none"; // Ocultar la imagen después de 3 segundos
-                startGame();
-            }, 2000); // 3000 milisegundos = 3 segundos
+            catImage.style.display = "none"; // Ocultar la imagen
         }
-    
+
         // Iniciar el contexto de audio al cargar la página
         function startGame() {
             getAudioContext().resume();
             setup();
+            hideCatImage(); // Llamar a esta función cuando el juego se haya cargado
         }
-    
-        // Llamar a startGameAfterDelay después de cargar la página
-        window.addEventListener("load", startGameAfterDelay);
-    
+
+        // Llamar a la función cuando se cargue la página y cuando cambie su tamaño
+        window.addEventListener("load", createCanvasAndResize);
+        window.addEventListener("resize", createCanvasAndResize);
+
+        // Llamar a startGame después de cargar la página
+        window.addEventListener("load", startGame);
     </script>
     
 </body>
