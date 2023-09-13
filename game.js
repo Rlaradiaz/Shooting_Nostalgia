@@ -33,7 +33,6 @@ let derrotoAlBoss = false;
 
 
 
-
 window.onload = function () {
   // Ocultar la imagen
   let catImage = document.getElementById("cat-image");
@@ -98,22 +97,16 @@ function setup() {
   let fondoWidth = fondoImages[0].width;
   let fondoHeight = fondoImages[0].height;
 
-  
-
-  
+   
 
   // Crear el lienzo con el ancho de la imagen de fondo y la altura de la ventana
   createCanvas(fondoWidth, windowHeight);
-
   
-
   jugador = new Jugador(width / 2, height - 50);
   imagenBienvenida.resize(width, height);
   boss = new Boss(bossImages, width / 2, -200, 0, 2);
 
- 
- 
-    
+     
 }
 
 function windowResized() {
