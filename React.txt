@@ -1,0 +1,125 @@
+/* APP.css */
+
+.App {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+.chat-container {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  margin: 20px;
+}
+
+.chat-messages {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.message {
+  padding: 5px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.message.es {
+  background-color: #e6f7ff;
+}
+
+.message.en {
+  background-color: #f0f0f0;
+}
+
+.chat-input input {
+  width: 80%;
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.chat-input button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #0056b3;
+}
+
+// chatapp.js
+
+import React, { useState } from 'react';
+import { v2 } from "@google-cloud/translate"; // Importa la biblioteca de Google Cloud Translation
+import './App.css'; // Importa el archivo CSS
+
+function App() {
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [userLanguage, setUserLanguage] = useState('es');
+
+  const translate = new Translate({
+    projectId: 'traductor-399100',
+    keyFilename: 'C:\\Users\\RODRIGO\\Downloads\\traductor-399100-19d85256412d.json',
+  });
+
+  const sendMessage = async () => {
+    if (inputMessage.trim() === '') return;
+
+    try {
+      // Detecta el idioma del mensaje de entrada
+      const [detection] = await translate.detect(inputMessage);
+      const sourceLanguage = detection.language;
+
+      // Traduce el mensaje al idioma deseado
+      const [translation] = await translate.translate(inputMessage, userLanguage);
+
+      const newMessage = {
+        text: translation,
+        language: userLanguage,
+        sourceLanguage: sourceLanguage,
+      };
+
+      setMessages([...messages, newMessage]);
+      setInputMessage('');
+    } catch (error) {
+      console.error('Error de traducción:', error);
+    }
+  };
+
+  return (
+    <div className="App">
+      <div className="chat-container">
+        <div className="chat-messages">
+          {messages.map((message, index) => (
+            <div key={index} className={`message ${message.language}`}>
+              {message.text}
+            </div>
+          ))}
+        </div>
+        <div className="chat-input">
+          <input
+            type="text"
+            placeholder="Escribe tu mensaje..."
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+          />
+          <button onClick={sendMessage}>Enviar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+

@@ -74,7 +74,9 @@ function preload() {
   sonidoExplosion = loadSound('sounds/explosion.wav', sonidoCargado, sonidoError);
   musicaFondo = loadSound('mega.mp3', sonidoCargado, sonidoError);
   imagenBienvenida = loadImage('imagenes/cat.jpeg');
+  musicaFondo.setVolume(0.2);
 }
+
 
 function imagenCargada(img) {
   console.log(`Imagen cargada: ${img.src}`);
