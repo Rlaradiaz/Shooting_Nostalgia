@@ -75,6 +75,8 @@ function preload() {
   musicaFondo = loadSound('mega.mp3', sonidoCargado, sonidoError);
   imagenBienvenida = loadImage('imagenes/cat.jpeg');
   musicaFondo.setVolume(0.2);
+  sonidoDisparo.setVolume(0.2); // Establece el volumen al 20%
+  sonidoExplosion.setVolume(0.3);
 }
 
 
