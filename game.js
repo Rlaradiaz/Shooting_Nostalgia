@@ -59,7 +59,7 @@ function preload() {
     helicopter1Images.push(loadImage(`helicoptero3/${i}.png`, imagenCargada, imagenError));
   }
   for (let i = 1; i <= 7; i++) {
-    bossImages.push(loadImage(`boss/${i}.png`, imagenCargada, imagenError));
+     bossImages.push(loadImage(`Boss/${i}.png`, imagenCargada, imagenError));
   }
   for (let i = 1; i <= 12; i++) {
     explosionImages.push(loadImage(`explosion/${i}.png`, () => console.log(`Cargada imagen de explosión ${i}`)));
