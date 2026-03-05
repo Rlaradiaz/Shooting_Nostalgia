@@ -97,14 +97,7 @@ function sonidoError(err) {
 }
 
 function setup() {
-  // Obtener el tamaño de una de las imágenes de fondo (suponiendo que todas son del mismo tamaño)
-  let fondoWidth = fondoImages[0].width;
-  let fondoHeight = fondoImages[0].height;
-
-   
-
-  // Crear el lienzo con el ancho de la imagen de fondo y la altura de la ventana
-  createCanvas(fondoWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight);
   
   jugador = new Jugador(width / 2, height - 50);
   imagenBienvenida.resize(width, height);
@@ -114,9 +107,7 @@ function setup() {
 }
 
 function windowResized() {
-  // Ajustar el ancho del lienzo al ancho de la imagen de fondo
-  let fondoWidth = fondoImages[0].width;
-  resizeCanvas(fondoWidth, windowHeight);
+  resizeCanvas(windowWidth, windowHeight);
   
 }
 
@@ -377,23 +368,23 @@ class Jugador {
     console.log("Disparar");
     sonidoDisparo.play();
 
-    if (puntaje < 2500) {
-      // Disparar solo una bala hacia arriba
-      let bala = new Bala(
-        this.x + this.ancho / 2,
-        this.y,
-        0,
-        -1 // La dirección Y es siempre hacia arriba (negativa)
-      );
-      balas.push(bala);
-    } else {
-      // Disparar en las cuatro direcciones con imágenes diferentes
+    if (puntaje >= 1200) {
       let balaArriba = new Bala(this.x + this.ancho / 2, this.y, 0, -1, "arriba");
       let balaAbajo = new Bala(this.x + this.ancho / 2, this.y + this.alto, 0, 1, "abajo");
       let balaDerecha = new Bala(this.x + this.ancho, this.y + this.alto / 2, 1, 0, "derecha");
       let balaIzquierda = new Bala(this.x, this.y + this.alto / 2, -1, 0, "izquierda");
 
       balas.push(balaArriba, balaAbajo, balaDerecha, balaIzquierda);
+    } else if (puntaje >= 600) {
+      let balaArriba = new Bala(this.x + this.ancho / 2, this.y, 0, -1, "arriba");
+      balas.push(balaArriba);
+    } else if (puntaje >= 200) {
+      let balaDerecha = new Bala(this.x + this.ancho, this.y + this.alto / 2, 1, 0, "derecha");
+      let balaIzquierda = new Bala(this.x, this.y + this.alto / 2, -1, 0, "izquierda");
+      balas.push(balaDerecha, balaIzquierda);
+    } else {
+      let balaArriba = new Bala(this.x + this.ancho / 2, this.y, 0, -1, "arriba");
+      balas.push(balaArriba);
     }
   }
 }
