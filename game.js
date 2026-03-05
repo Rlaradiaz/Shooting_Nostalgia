@@ -49,7 +49,7 @@ function preload() {
   // Cargar sonidos
   sonidoDisparo = loadSound('sounds/laser.wav');
   sonidoExplosion = loadSound('sounds/explosion.wav');
-  musicaFondo = loadSound('mega.mp3');
+  musicaFondo = loadSound('imagenes/mega.mp3');
   imagenBienvenida = loadImage('imagenes/cat.jpeg');
 }
 
