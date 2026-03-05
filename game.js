@@ -1,6 +1,7 @@
 let jugador;
 let enemigos = [];
 let balas = [];
+let balasEnemigas = [];
 let marcianoImages = [];
 let helicopterImages = [];
 let helicopter1Images = [];
@@ -30,6 +31,7 @@ let pantallaGameOver = false;
 let aparecerEnemigosTipo2 = false;
 let perseguirEnemigos = false; // Variable global para controlar si los enemigos deben perseguir al jugador
 let derrotoAlBoss = false;
+let imagenMeteoro;
 
 
 
@@ -74,6 +76,7 @@ function preload() {
   sonidoExplosion = loadSound('sounds/explosion.wav', sonidoCargado, sonidoError);
   musicaFondo = loadSound('imagenes/mega.mp3', sonidoCargado, sonidoError);
   imagenBienvenida = loadImage('imagenes/cat.jpeg');
+  imagenMeteoro = loadImage('Resized_Meteoro.png', imagenCargada, imagenError);
   musicaFondo.setVolume(0.2);
   sonidoDisparo.setVolume(0.2); // Establece el volumen al 20%
   sonidoExplosion.setVolume(0.3);
@@ -218,6 +221,26 @@ function draw() {
           gameOver();
         }
         break; // Romper el bucle si el jugador es golpeado
+      }
+    }
+
+    // Actualizar y mostrar meteoros enemigos
+    for (let i = balasEnemigas.length - 1; i >= 0; i--) {
+      let meteoro = balasEnemigas[i];
+      meteoro.update();
+      meteoro.show();
+
+      if (meteoro.hitsJugador(jugador)) {
+        vida -= 10;
+        balasEnemigas.splice(i, 1);
+        if (vida <= 0) {
+          gameOver();
+        }
+        continue;
+      }
+
+      if (meteoro.fueraDePantalla()) {
+        balasEnemigas.splice(i, 1);
       }
     }
 
@@ -466,6 +489,8 @@ class Boss {
     this.explotando = false;
     this.explosionFrame = 0;
     this.haColisionadoConJugador = false;
+    this.ultimoDisparo = millis();
+    this.intervaloDisparo = 1200;
     
   }
 
@@ -510,6 +535,11 @@ class Boss {
       if (tiempoActual - this.tiempoCambioImagen >= this.intervaloCambioImagen) {
         this.imageIndex = (this.imageIndex + 1) % this.imagenes.length;
         this.tiempoCambioImagen = tiempoActual;
+      }
+
+      if (this.aparecido && tiempoActual - this.ultimoDisparo >= this.intervaloDisparo) {
+        balasEnemigas.push(new MeteoroEnemigo(this.x + this.ancho / 2, this.y + this.alto));
+        this.ultimoDisparo = tiempoActual;
       }
     }
   }
@@ -606,6 +636,8 @@ class Enemigo {
     this.haColisionadoConJugador = false;
     this.tipo = tipo;
     this.perseguirJugador = false;
+    this.ultimoDisparo = millis();
+    this.intervaloDisparo = random(1800, 3200);
   }
 
   update() {
@@ -632,6 +664,12 @@ class Enemigo {
         }
       }
       this.frame = (this.frame + 1) % this.imagenes.length;
+
+      const tiempoActual = millis();
+      if (tiempoActual - this.ultimoDisparo >= this.intervaloDisparo) {
+        balasEnemigas.push(new MeteoroEnemigo(this.x + this.ancho / 2, this.y + this.alto));
+        this.ultimoDisparo = tiempoActual;
+      }
     }
 
     // Si el puntaje alcanza 1000 y el enemigo es de tipo 1, persigue al jugador
@@ -710,6 +748,43 @@ class Enemigo {
   }
 }
 
+class MeteoroEnemigo {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.velY = 4;
+    this.ancho = 40;
+    this.alto = 40;
+  }
+
+  update() {
+    this.y += this.velY;
+  }
+
+  show() {
+    if (imagenMeteoro) {
+      image(imagenMeteoro, this.x - this.ancho / 2, this.y - this.alto / 2, this.ancho, this.alto);
+    } else {
+      fill(255, 120, 0);
+      noStroke();
+      ellipse(this.x, this.y, this.ancho, this.alto);
+    }
+  }
+
+  hitsJugador(jugador) {
+    return (
+      this.x + this.ancho / 2 > jugador.x &&
+      this.x - this.ancho / 2 < jugador.x + jugador.ancho &&
+      this.y + this.alto / 2 > jugador.y &&
+      this.y - this.alto / 2 < jugador.y + jugador.alto
+    );
+  }
+
+  fueraDePantalla() {
+    return this.y - this.alto / 2 > height;
+  }
+}
+
 
 
 function generarEnemigos1() {
@@ -767,6 +842,7 @@ function resetGame() {
   tiempoUltimoEnemigo = millis();
   enemigos = [];
   balas = [];
+  balasEnemigas = [];
   jugador = new Jugador(width / 2, height - 50);
   boss.aparecido = false;
   boss.explotando = false;
