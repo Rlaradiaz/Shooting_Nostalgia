@@ -59,7 +59,7 @@ function preload() {
     helicopter1Images.push(loadImage(`helicoptero3/${i}.png`, imagenCargada, imagenError));
   }
   for (let i = 1; i <= 7; i++) {
-    bossImages.push(loadImage(`Boss/${i}.png`, imagenCargada, imagenError));
+    bossImages.push(loadImage(`boss/${i}.png`, imagenCargada, imagenError));
   }
   for (let i = 1; i <= 12; i++) {
     explosionImages.push(loadImage(`explosion/${i}.png`, () => console.log(`Cargada imagen de explosión ${i}`)));
@@ -72,7 +72,7 @@ function preload() {
 
   sonidoDisparo = loadSound('sounds/laser.wav', sonidoCargado, sonidoError);
   sonidoExplosion = loadSound('sounds/explosion.wav', sonidoCargado, sonidoError);
-  musicaFondo = loadSound('mega.mp3', sonidoCargado, sonidoError);
+  musicaFondo = loadSound('imagenes/mega.mp3', sonidoCargado, sonidoError);
   imagenBienvenida = loadImage('imagenes/cat.jpeg');
   musicaFondo.setVolume(0.2);
   sonidoDisparo.setVolume(0.2); // Establece el volumen al 20%
