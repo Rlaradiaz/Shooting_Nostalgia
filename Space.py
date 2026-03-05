@@ -6,17 +6,7 @@
 import pygame
 import random
 import sys
-from PIL import Image
 import os
-
-
-# image resized
-
-Bossx = Image.open("bossxx.png")
-new_width = 300
-new_heigt = 300
-resized_image=Bossx.resize((new_width,new_heigt))
-resized_image.save("boosx.png")
 
 
 
@@ -78,9 +68,9 @@ transicion_alpha = 255  # Comienza con el valor máximo para el fade-in
 
 
 # Sounds
-laser_sonido = pygame.mixer.Sound("laser.wav")
-explosion_sonido = pygame.mixer.Sound("explosion.wav")
-golpe_sonido = pygame.mixer.Sound("-miau-.mp3")
+laser_sonido = pygame.mixer.Sound("sounds/laser.wav")
+explosion_sonido = pygame.mixer.Sound("sounds/explosion.wav")
+golpe_sonido = pygame.mixer.Sound("sounds/-miau-.mp3")
 
 
 
